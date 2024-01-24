@@ -1,0 +1,10 @@
+# formatter
+black
+isort
+
+fire
+
+tqdm
+gevent
+
+ffmpeg-python
