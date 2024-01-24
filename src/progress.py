@@ -1,6 +1,7 @@
 import argparse
 import socket
 import sys
+import threading
 
 import ffmpeg
 import gevent
@@ -13,7 +14,7 @@ from tqdm import tqdm
 PORT = 50057
 
 
-class FFmpegPBar:
+class FFmpegTCPSender:
     def __init__(self, total, update_callback):
         self.total = total
         self.update_callback = update_callback
@@ -69,7 +70,7 @@ def cli_pbar(file_path):
     total = float(ffmpeg.probe(file_path)["format"]["duration"])
     with tqdm(total=total) as pbar:
         callback = lambda x: pbar.update(x)
-        FFmpegPBar(total, callback).tcp_handler()
+        FFmpegTCPSender(total, callback).tcp_handler()
 
 
 def _main():
@@ -78,37 +79,42 @@ def _main():
     parser.add_argument("out_filename", help="Output filename")
     args = parser.parse_args()
 
-    # gevent.spawnを使用して非同期タスクを開始
-    greenlet = gevent.spawn(cli_pbar, args.in_filename)
+    total = float(ffmpeg.probe(args.in_filename)["format"]["duration"])
+    with tqdm(total=total) as pbar:
+        callback = lambda x: pbar.update(x)
+        sender = FFmpegTCPSender(total, callback)
 
-    sepia_values = [
-        0.393,
-        0.769,
-        0.189,
-        0,
-        0.349,
-        0.686,
-        0.168,
-        0,
-        0.272,
-        0.534,
-        0.131,
-    ]
-    try:
-        (
-            ffmpeg.input(args.in_filename)
-            .colorchannelmixer(*sepia_values)
-            .output(args.out_filename)
-            .global_args("-progress", f"tcp://127.0.0.1:{PORT}")
-            .overwrite_output()
-            .run(capture_stdout=True, capture_stderr=True)
-        )
-    except ffmpeg.Error as e:
-        print(e.stderr, file=sys.stderr)
-        sys.exit(1)
+        # gevent.spawnを使用して非同期タスクを開始
+        greenlet = gevent.spawn(sender.tcp_handler)
 
-    # gevent.joinallで全てのタスクが完了するまで待つ
-    gevent.joinall([greenlet])
+        sepia_values = [
+            0.393,
+            0.769,
+            0.189,
+            0,
+            0.349,
+            0.686,
+            0.168,
+            0,
+            0.272,
+            0.534,
+            0.131,
+        ]
+        try:
+            (
+                ffmpeg.input(args.in_filename)
+                .colorchannelmixer(*sepia_values)
+                .output(args.out_filename)
+                .global_args("-progress", f"tcp://127.0.0.1:{PORT}")
+                .overwrite_output()
+                .run(capture_stdout=True, capture_stderr=True)
+            )
+        except ffmpeg.Error as e:
+            print(e.stderr, file=sys.stderr)
+            sys.exit(1)
+
+        # gevent.joinallで全てのタスクが完了するまで待つ
+        gevent.joinall([greenlet])
 
 
 if __name__ == "__main__":
