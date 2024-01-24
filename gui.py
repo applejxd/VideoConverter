@@ -2,19 +2,20 @@ import sys
 import threading
 import time
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 
+import ffmpeg
 import gevent
 
 from src.compressor import compress
 from src.conveter import to_mp4
 from src.extractor import audio_eliminate, audio_extract
-from src.progress import launch_tcp_watcher
+from src.progress import FFmpegTCPSender
 
 
 def _create_window():
     window = tk.Tk()
-    window.geometry("500x400")
+    window.geometry("510x420")
     window.title("VideoConverter")
     return window
 
@@ -39,6 +40,10 @@ class Window:
         # 変換ボタン
         self._create_convert_button()
         self.selected_method = self._create_method_options()
+
+        self.pb = ttk.Progressbar(self.root, length=200, mode="determinate", maximum=1)
+        self.pb.grid(row=2, column=0, columnspan=5, padx=20, pady=20)
+
         # コンソール
         self._create_console()
 
@@ -67,7 +72,15 @@ class Window:
             print(f"Method: {method_str}")
             method = globals()[method_str]
 
-            greenlet_progress = gevent.spawn(launch_tcp_watcher, path_str)
+            total = float(ffmpeg.probe(path_str)["format"]["duration"])
+
+            def callback(n):
+                self.pb.configure(value=n / total)
+                self.pb.update()
+
+            sender = FFmpegTCPSender(total, callback)
+
+            greenlet_progress = gevent.spawn(sender.tcp_handler)
             greenlet_ffmpeg = gevent.spawn(method, path_str)
             gevent.joinall([greenlet_progress, greenlet_ffmpeg])
             # progress_thread = threading.Thread(
@@ -100,7 +113,7 @@ class Window:
 
     def _create_console(self):
         output_text = tk.Text(self.root, wrap=tk.WORD, height=20, width=65)
-        output_text.grid(row=4, column=0, columnspan=5, padx=20, pady=20)
+        output_text.grid(row=3, column=0, columnspan=5, padx=20, pady=20)
         stdout_redirector = StdoutRedirector(output_text)
         sys.stdout = stdout_redirector
 

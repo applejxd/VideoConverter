@@ -37,12 +37,9 @@ class FFmpegTCPSender:
             if value == "N/A":
                 return
             time = round(float(value) / 1000000.0, 2)
-            dt = time - self.n
+            self.update_callback(time)
         elif key == "progress" and value == "end":
-            dt = self.total - self.n
-
-        self.update_callback(dt)
-        self.n = self.n + dt
+            self.update_callback(self.total)
 
     def tcp_handler(self):
         connection = self._connect(PORT)
@@ -66,13 +63,6 @@ class FFmpegTCPSender:
             data = lines[-1]
 
 
-def cli_pbar(file_path):
-    total = float(ffmpeg.probe(file_path)["format"]["duration"])
-    with tqdm(total=total) as pbar:
-        callback = lambda x: pbar.update(x)
-        FFmpegTCPSender(total, callback).tcp_handler()
-
-
 def _main():
     parser = argparse.ArgumentParser()
     parser.add_argument("in_filename", help="Input filename")
@@ -81,7 +71,7 @@ def _main():
 
     total = float(ffmpeg.probe(args.in_filename)["format"]["duration"])
     with tqdm(total=total) as pbar:
-        callback = lambda x: pbar.update(x)
+        callback = lambda x: pbar.update(x - pbar.n)
         sender = FFmpegTCPSender(total, callback)
 
         # gevent.spawnを使用して非同期タスクを開始
