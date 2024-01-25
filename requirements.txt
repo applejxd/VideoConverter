@@ -3,6 +3,7 @@ black
 isort
 
 fire
+pyinstaller
 
 tqdm
 gevent
