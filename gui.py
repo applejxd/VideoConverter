@@ -1,3 +1,4 @@
+import datetime
 import sys
 import threading
 import time
@@ -41,8 +42,12 @@ class Window:
         self._create_convert_button()
         self.selected_method = self._create_method_options()
 
+        self.percent = tk.Label(self.root, text="  0%")
+        self.percent.grid(row=2, column=0, padx=20, pady=20)
         self.pb = ttk.Progressbar(self.root, length=200, mode="determinate", maximum=1)
-        self.pb.grid(row=2, column=0, columnspan=5, padx=20, pady=20)
+        self.pb.grid(row=2, column=1, columnspan=2, padx=0, pady=0)
+        self.remain = tk.Label(self.root, text=f"[00:00<00:00], 0s/it")
+        self.remain.grid(row=2, column=3, columnspan=2, padx=20, pady=20)
 
         # コンソール
         self._create_console()
@@ -64,34 +69,37 @@ class Window:
         entry.grid(row=0, column=1, columnspan=4, padx=0, pady=20)
         return entry_var
 
+    def _convert(self):
+        path_str = self.entry_var.get()
+        method_str = self.selected_method.get()
+        print(f"Path: {path_str}")
+        print(f"Method: {method_str}")
+        method = globals()[method_str]
+
+        total = float(ffmpeg.probe(path_str)["format"]["duration"])
+        start_time = time.time()
+
+        def callback(n):
+            self.pb.configure(value=n / total)
+            self.pb.update()
+
+            dt = time.time() - start_time
+            mean_speed = dt / n
+            remain_time = mean_speed * total - dt
+
+            dt = "{:02d}:{:02d}".format(*divmod(int(dt), 60))
+            remain_time = "{:02d}:{:02d}".format(*divmod(int(remain_time), 60))
+            self.percent["text"] = f"{int(100*n/total):02d}%"
+            self.remain["text"] = f"[{dt}<{remain_time}] {mean_speed:.1f}s/it"
+
+        sender = FFmpegTCPSender(total, callback)
+
+        greenlet_progress = gevent.spawn(sender.tcp_handler)
+        greenlet_ffmpeg = gevent.spawn(method, path_str)
+        gevent.joinall([greenlet_progress, greenlet_ffmpeg])
+
     def _create_convert_button(self):
-        def convert():
-            path_str = self.entry_var.get()
-            method_str = self.selected_method.get()
-            print(f"Path: {path_str}")
-            print(f"Method: {method_str}")
-            method = globals()[method_str]
-
-            total = float(ffmpeg.probe(path_str)["format"]["duration"])
-
-            def callback(n):
-                self.pb.configure(value=n / total)
-                self.pb.update()
-
-            sender = FFmpegTCPSender(total, callback)
-
-            greenlet_progress = gevent.spawn(sender.tcp_handler)
-            greenlet_ffmpeg = gevent.spawn(method, path_str)
-            gevent.joinall([greenlet_progress, greenlet_ffmpeg])
-            # progress_thread = threading.Thread(
-            #     target=launch_tcp_watcher, args=(path_str,)
-            # )
-            # ffmpeg_thread = threading.Thread(target=method, args=(path_str,))
-            # progress_thread.start()
-            # time.sleep(1)
-            # ffmpeg_thread.start()
-
-        button = tk.Button(self.root, text="変換", command=convert)
+        button = tk.Button(self.root, text="変換", command=self._convert)
         button.grid(row=1, column=0, padx=20, pady=0)
 
     def _create_method_options(self):
@@ -112,7 +120,7 @@ class Window:
         return selected_method
 
     def _create_console(self):
-        output_text = tk.Text(self.root, wrap=tk.WORD, height=20, width=65)
+        output_text = tk.Text(self.root, wrap=tk.WORD, height=15, width=65)
         output_text.grid(row=3, column=0, columnspan=5, padx=20, pady=20)
         stdout_redirector = StdoutRedirector(output_text)
         sys.stdout = stdout_redirector
