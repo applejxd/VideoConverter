@@ -2,7 +2,7 @@
 
 ## Install dependencies
 
-For windows:
+For Windows 11:
 
 ```powershell
 winget install ffmpeg
@@ -12,4 +12,6 @@ py -3.11 -m venv .venv
 python -m pip install --upgrade pip
 
 pip install -r requirements.txt
+
+pyinstaller gui.py --onefile
 ```
