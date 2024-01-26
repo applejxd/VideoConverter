@@ -1,5 +1,7 @@
 # VideoConverter
 
+Python CLI (Fire) and GUI (Tkinter) interface examples for ffmpeg-python
+
 ## Install dependencies
 
 For Windows 11:
