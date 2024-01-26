@@ -124,13 +124,5 @@ class Window:
         sys.stdout = stdout_redirector
 
 
-sys.stdout = sys.__stdout__
-sys.stderr = sys.__stderr__
-
-
-def main():
+def open_window():
     Window()
-
-
-if __name__ == "__main__":
-    main()
