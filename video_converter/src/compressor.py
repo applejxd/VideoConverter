@@ -3,9 +3,8 @@ import sys
 from typing import Optional
 
 import ffmpeg
-import gevent
 
-from src import progress
+from video_converter.src import progress
 
 
 def compress(path: str, crf: Optional[int] = 23) -> None:

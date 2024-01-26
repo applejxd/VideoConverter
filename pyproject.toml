@@ -1,0 +1,16 @@
+[project]
+name = "video_converter"
+version = "0.1.0"
+dependencies = [
+    "black",
+    "isort",
+    "fire",
+    "pyinstaller",
+    "tqdm",
+    "gevent",
+    "ffmpeg-python",
+]
+
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"

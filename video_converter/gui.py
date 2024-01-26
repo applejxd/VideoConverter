@@ -1,6 +1,4 @@
-import datetime
 import sys
-import threading
 import time
 import tkinter as tk
 from tkinter import filedialog, ttk
@@ -8,10 +6,10 @@ from tkinter import filedialog, ttk
 import ffmpeg
 import gevent
 
-from src.compressor import compress
-from src.conveter import to_mp4
-from src.extractor import audio_eliminate, audio_extract
-from src.progress import FFmpegTCPSender
+from video_converter.src.compressor import compress
+from video_converter.src.conveter import to_mp4
+from video_converter.src.extractor import audio_eliminate, audio_extract
+from video_converter.src.progress import FFmpegTCPSender
 
 
 def _create_window():

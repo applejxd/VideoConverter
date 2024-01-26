@@ -2,9 +2,8 @@ import os
 import sys
 
 import ffmpeg
-import gevent
 
-from src import progress
+from video_converter.src import progress
 
 
 def to_mp4(path: str) -> None:
