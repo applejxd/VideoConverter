@@ -13,7 +13,14 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 
-pip install -r requirements.txt
+pip install -e .
 
-pyinstaller gui.py --onefile
+pyinstaller .\video_converter\gui.py --onefile
+```
+
+## How to use
+
+```powershell
+# Open GUI
+python -m video_conveter open_window
 ```
