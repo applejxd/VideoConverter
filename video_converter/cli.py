@@ -1,3 +1,6 @@
+"""
+CLI commands by Python-Fire
+"""
 from fire import Fire as _Fire
 
 from video_converter.gui import open_window
