@@ -6,7 +6,7 @@ import gevent
 import tqdm
 from gevent import monkey
 
-monkey.patch_all()
+# monkey.patch_all()
 
 PORT = 50057
 
