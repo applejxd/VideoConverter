@@ -18,7 +18,7 @@ python -m pip install --upgrade pip
 # Library install
 pip install -e .
 # GUI executable creation
-pyinstaller .\video_converter\gui.py --onefile
+pyinstaller .\video_converter\gui.py --onefile --noconsole
 ```
 
 ## How to use

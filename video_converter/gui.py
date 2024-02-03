@@ -144,3 +144,7 @@ class Window:
 
 def open_window():
     Window()
+
+
+if __name__ == "__main__":
+    open_window()
