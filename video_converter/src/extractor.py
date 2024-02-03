@@ -1,6 +1,9 @@
 import os
+import sys
 
 import ffmpeg
+
+from video_converter.src import progress
 
 
 def audio_extract(path: str) -> None:
@@ -9,13 +12,16 @@ def audio_extract(path: str) -> None:
     :param path: 動画のファイルパス
     """
     audio_path = f"{os.path.splitext(path)[0]}.mp3"
-    ffmpeg.input(path).output(audio_path).run()
+    pipeline = ffmpeg.input(path).output(audio_path)
+    return pipeline
 
 
 def audio_eliminate(path: str) -> None:
     """音声を削除
 
     :param path: 動画のファイルパス
+    :param path:
     """
     no_audio_path = f"{os.path.splitext(path)[0]}_wo_audio.mp4"
-    ffmpeg.input(path).output(no_audio_path, streams="a").run()
+    pipeline = ffmpeg.input(path).output(no_audio_path).global_args("-an")
+    return pipeline

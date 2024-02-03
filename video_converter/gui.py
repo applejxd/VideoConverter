@@ -6,6 +6,7 @@ from tkinter import filedialog, ttk
 import ffmpeg
 import gevent
 
+from video_converter.src import progress
 from video_converter.src.compressor import compress
 from video_converter.src.conveter import to_mp4
 from video_converter.src.extractor import audio_eliminate, audio_extract
@@ -19,6 +20,11 @@ def _create_window():
     return window
 
 
+def _browse_file(string_var):
+    file_path = filedialog.askopenfilename()
+    string_var.set(file_path)
+
+
 class StdoutRedirector:
     def __init__(self, text_widget):
         self.text_widget = text_widget
@@ -26,6 +32,25 @@ class StdoutRedirector:
     def write(self, message):
         self.text_widget.insert(tk.END, message)
         self.text_widget.see(tk.END)  # テキストを最後にスクロール
+
+
+class TkPBarWriter:
+    def __init__(self, total):
+        self.total = total
+        self.start_time = time.time()
+
+    def callback(self, step, pb, percent_label, remain_label):
+        pb.configure(value=step / self.total)
+        pb.update()
+
+        dt = time.time() - self.start_time
+        mean_speed = dt / step
+        remain_time = mean_speed * self.total - dt
+
+        dt = "{:02d}:{:02d}".format(*divmod(int(dt), 60))
+        remain_time = "{:02d}:{:02d}".format(*divmod(int(remain_time), 60))
+        percent_label["text"] = f"{int(100*step/self.total):02d}%"
+        remain_label["text"] = f"[{dt}<{remain_time}] {mean_speed:.1f}s/it"
 
 
 class Window:
@@ -53,13 +78,13 @@ class Window:
         self.root.mainloop()
 
     def _create_select_button(self):
-        browse_button = tk.Button(self.root, text="ファイルを選択", command=self._browse_file)
+        browse_button = tk.Button(
+            self.root,
+            text="ファイルを選択",
+            command=lambda: _browse_file(self.entry_var),
+        )
         browse_button.grid(row=0, column=0, padx=20, pady=20)
         return browse_button
-
-    def _browse_file(self):
-        file_path = filedialog.askopenfilename()
-        self.entry_var.set(file_path)
 
     def _create_path_entry(self):
         entry_var = tk.StringVar()
@@ -72,28 +97,21 @@ class Window:
         method_str = self.selected_method.get()
         print(f"Path: {path_str}")
         print(f"Method: {method_str}")
-        method = globals()[method_str]
 
+        # プログレスバー書き込み
         total = float(ffmpeg.probe(path_str)["format"]["duration"])
-        start_time = time.time()
-
-        def callback(n):
-            self.pb.configure(value=n / total)
-            self.pb.update()
-
-            dt = time.time() - start_time
-            mean_speed = dt / n
-            remain_time = mean_speed * total - dt
-
-            dt = "{:02d}:{:02d}".format(*divmod(int(dt), 60))
-            remain_time = "{:02d}:{:02d}".format(*divmod(int(remain_time), 60))
-            self.percent["text"] = f"{int(100*n/total):02d}%"
-            self.remain["text"] = f"[{dt}<{remain_time}] {mean_speed:.1f}s/it"
-
-        sender = FFmpegTCPSender(total, callback)
-
+        pbar_writer = TkPBarWriter(total)
+        sender = FFmpegTCPSender(
+            total,
+            lambda step: pbar_writer.callback(step, self.pb, self.percent, self.remain),
+        )
         greenlet_progress = gevent.spawn(sender.tcp_handler)
-        greenlet_ffmpeg = gevent.spawn(method, path_str)
+
+        # FFmpeg 変換
+        pipeline = globals()[method_str](path_str)
+        pipeline = pipeline.global_args("-progress", f"tcp://127.0.0.1:{progress.PORT}")
+        greenlet_ffmpeg = gevent.spawn(lambda: pipeline.run())
+
         gevent.joinall([greenlet_progress, greenlet_ffmpeg])
 
     def _create_convert_button(self):

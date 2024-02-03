@@ -6,23 +6,11 @@
   "configurations": [
     {
       "name": "Python: 現在のファイル",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
       "justMyCode": false
-    },
-    {
-      "name": "プログレスバー",
-      "type": "python",
-      "request": "launch",
-      "program": "${workspaceFolder}/src/progress.py",
-      "console": "integratedTerminal",
-      "justMyCode": false,
-      "args": [
-        "E:\\datasets\\iPhone\\wakayama\\IMG_1006.MOV",
-        "E:\\datasets\\iPhone\\wakayama\\IMG_1006.mp4"
-      ]
     }
   ]
 }

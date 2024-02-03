@@ -1,5 +1,9 @@
 import socket
+import sys
 
+import ffmpeg
+import gevent
+import tqdm
 from gevent import monkey
 
 monkey.patch_all()
@@ -53,3 +57,20 @@ class FFmpegTCPSender:
 
                 self._update_pbar(key, value)
             data = lines[-1]
+
+
+def run_with_tcp_pbar(path, pipeline):
+    pipeline = pipeline.global_args("-progress", f"tcp://127.0.0.1:{PORT}")
+    total = float(ffmpeg.probe(path)["format"]["duration"])
+    with tqdm.tqdm(total=total) as pbar:
+
+        def pbar_callback(n):
+            pbar.update(n - pbar_callback.n_pre)
+            pbar_callback.n_pre = n
+
+        pbar_callback.n_pre = 0
+        sender = FFmpegTCPSender(total, pbar_callback)
+
+        greenlet_progress = gevent.spawn(sender.tcp_handler)
+        greenlet_ffmpeg = gevent.spawn(pipeline.run)
+        gevent.joinall([greenlet_progress, greenlet_ffmpeg])
