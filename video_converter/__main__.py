@@ -27,7 +27,7 @@ def cli_wrapper(func):
 
 Fire(
     {
-        "open_window": open_window,
+        "gui": open_window,
         "compress": cli_wrapper(compress),
         "to_mp4": cli_wrapper(to_mp4),
         "audio_eliminate": cli_wrapper(audio_eliminate),
