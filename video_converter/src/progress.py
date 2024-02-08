@@ -3,12 +3,26 @@ import sys
 
 import ffmpeg
 import gevent
+import psutil
 import tqdm
 from gevent import monkey
 
 # monkey.patch_all()
 
-PORT = 50057
+
+def get_available_port(start=49152):
+    # "LISTEN" 状態のポート番号をリスト化
+    used_ports = [
+        conn.laddr.port for conn in psutil.net_connections() if conn.status == "LISTEN"
+    ]
+    for port in range(start, 65535 + 1):
+        # 未使用のポート番号ならreturn
+        if port not in set(used_ports):
+            return port
+    return None
+
+
+PORT = get_available_port()
 
 
 class FFmpegTCPSender:
