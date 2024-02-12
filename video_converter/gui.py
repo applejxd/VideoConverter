@@ -34,25 +34,6 @@ class StdoutRedirector:
         self.text_widget.see(tk.END)  # テキストを最後にスクロール
 
 
-class TkPBarWriter:
-    def __init__(self, total):
-        self.total = total
-        self.start_time = time.time()
-
-    def callback(self, step, pb, percent_label, remain_label):
-        pb.configure(value=step / self.total)
-        pb.update()
-
-        dt = time.time() - self.start_time
-        mean_speed = dt / step
-        remain_time = mean_speed * self.total - dt
-
-        dt = "{:02d}:{:02d}".format(*divmod(int(dt), 60))
-        remain_time = "{:02d}:{:02d}".format(*divmod(int(remain_time), 60))
-        percent_label["text"] = f"{int(100*step/self.total):02d}%"
-        remain_label["text"] = f"[{dt}<{remain_time}] {mean_speed:.1f}s/it"
-
-
 class Window:
     def __init__(self):
         self.root = _create_window()
@@ -71,6 +52,8 @@ class Window:
         self.pb.grid(row=2, column=1, columnspan=2, padx=0, pady=0)
         self.remain = tk.Label(self.root, text=f"[00:00<00:00], 0s/it")
         self.remain.grid(row=2, column=3, columnspan=2, padx=20, pady=20)
+
+        self.pbar_writer = TkPBarWriter()
 
         # コンソール
         self._create_console()
@@ -92,30 +75,10 @@ class Window:
         entry.grid(row=0, column=1, columnspan=4, padx=0, pady=20)
         return entry_var
 
-    def _convert(self):
-        path_str = self.entry_var.get()
-        method_str = self.selected_method.get()
-        print(f"Path: {path_str}")
-        print(f"Method: {method_str}")
-
-        # プログレスバー書き込み
-        total = float(ffmpeg.probe(path_str)["format"]["duration"])
-        pbar_writer = TkPBarWriter(total)
-        sender = FFmpegTCPSender(
-            total,
-            lambda step: pbar_writer.callback(step, self.pb, self.percent, self.remain),
-        )
-        greenlet_progress = gevent.spawn(sender.tcp_handler)
-
-        # FFmpeg 変換
-        pipeline = globals()[method_str](path_str)
-        pipeline = pipeline.global_args("-progress", f"tcp://127.0.0.1:{progress.PORT}")
-        greenlet_ffmpeg = gevent.spawn(lambda: pipeline.run())
-
-        gevent.joinall([greenlet_progress, greenlet_ffmpeg])
-
     def _create_convert_button(self):
-        button = tk.Button(self.root, text="変換", command=self._convert)
+        button = tk.Button(
+            self.root, text="変換", command=lambda: convert_and_send(self)
+        )
         button.grid(row=1, column=0, padx=20, pady=0)
 
     def _create_method_options(self):
@@ -140,6 +103,48 @@ class Window:
         output_text.grid(row=3, column=0, columnspan=5, padx=20, pady=20)
         stdout_redirector = StdoutRedirector(output_text)
         sys.stdout = stdout_redirector
+
+
+class TkPBarWriter:
+    def __init__(self, total=None):
+        self.total = total
+        self.start_time = time.time()
+
+    def callback(self, step, window):
+        window.pb.configure(value=step / self.total)
+        window.pb.update()
+
+        dt = time.time() - self.start_time
+        mean_speed = dt / step
+        remain_time = mean_speed * self.total - dt
+
+        dt = "{:02d}:{:02d}".format(*divmod(int(dt), 60))
+        remain_time = "{:02d}:{:02d}".format(*divmod(int(remain_time), 60))
+        window.percent_label["text"] = f"{int(100*step/self.total):02d}%"
+        window.remain_label["text"] = f"[{dt}<{remain_time}] {mean_speed:.1f}s/it"
+
+
+def convert_and_send(window: Window):
+    path_str = window.entry_var.get()
+    method_str = window.selected_method.get()
+    print(f"Path: {path_str}")
+    print(f"Method: {method_str}")
+
+    # プログレスバー書き込み
+    total = float(ffmpeg.probe(path_str)["format"]["duration"])
+    window.pbar_writer.total = total
+    sender = FFmpegTCPSender(
+        total,
+        lambda step: window.pbar_writer.callback(step, window),
+    )
+    greenlet_progress = gevent.spawn(sender.tcp_handler)
+
+    # FFmpeg 変換
+    pipeline = globals()[method_str](path_str)
+    pipeline = pipeline.global_args("-progress", f"tcp://127.0.0.1:{progress.PORT}")
+    greenlet_ffmpeg = gevent.spawn(lambda: pipeline.run())
+
+    gevent.joinall([greenlet_progress, greenlet_ffmpeg])
 
 
 def open_window():
