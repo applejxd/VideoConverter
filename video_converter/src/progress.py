@@ -22,14 +22,17 @@ def get_available_port(start=49152):
     raise RuntimeError("使用可能なポート番号がありません")
 
 
-PORT = 50057
+PORT = get_available_port()
 
 
+# Model (Observer pattern)
 class FFmpegTCPSender:
-    def __init__(self, total, update_callback):
+    def __init__(self, pbar, total):
+        # Observer (Observer pattern)
+        self.pbar = pbar
+
         self.total = total
-        self.update_callback = update_callback
-        self.n = 0
+        self.time_pre = 0
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -42,16 +45,22 @@ class FFmpegTCPSender:
         connection, client_address = self.sock.accept()
         return connection
 
-    def _update_pbar(self, key, value):
+    def _notify_pbar(self, key, value):
         if key == "out_time_ms":
             if value == "N/A":
                 return
             time = round(float(value) / 1000000.0, 2)
-            self.update_callback(time)
         elif key == "progress" and value == "end":
-            self.update_callback(self.total)
+            time = self.total
+        else:
+            return
+
+        self.pbar.update(time - self.time_pre)
+        self.time_pre = time
 
     def tcp_handler(self):
+        global PORT
+
         connection = self._connect(PORT)
         data = b""
         while True:
@@ -69,22 +78,19 @@ class FFmpegTCPSender:
                 key = parts[0] if len(parts) > 0 else None
                 value = parts[1] if len(parts) > 1 else None
 
-                self._update_pbar(key, value)
+                self._notify_pbar(key, value)
             data = lines[-1]
 
 
 def run_with_tcp_pbar(path, pipeline):
+    global PORT
+
+    # TODO：AF_INET の TCP 通信以外にしたい
     pipeline = pipeline.global_args("-progress", f"tcp://127.0.0.1:{PORT}")
 
     total = float(ffmpeg.probe(path)["format"]["duration"])
     with tqdm.tqdm(total=total) as pbar:
-
-        def pbar_callback(n):
-            pbar.update(n - pbar_callback.n_pre)
-            pbar_callback.n_pre = n
-
-        pbar_callback.n_pre = 0
-        sender = FFmpegTCPSender(total, pbar_callback)
+        sender = FFmpegTCPSender(pbar, total)
 
         greenlet_progress = gevent.spawn(sender.tcp_handler)
         greenlet_ffmpeg = gevent.spawn(pipeline.run)
