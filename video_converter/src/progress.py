@@ -19,10 +19,10 @@ def get_available_port(start=49152):
         # 未使用のポート番号ならreturn
         if port not in set(used_ports):
             return port
-    return None
+    raise RuntimeError("使用可能なポート番号がありません")
 
 
-PORT = get_available_port()
+PORT = 50057
 
 
 class FFmpegTCPSender:
@@ -75,6 +75,7 @@ class FFmpegTCPSender:
 
 def run_with_tcp_pbar(path, pipeline):
     pipeline = pipeline.global_args("-progress", f"tcp://127.0.0.1:{PORT}")
+
     total = float(ffmpeg.probe(path)["format"]["duration"])
     with tqdm.tqdm(total=total) as pbar:
 
