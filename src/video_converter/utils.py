@@ -1,6 +1,6 @@
 from functools import wraps
 
-from video_converter.src import progress
+from video_converter import progress
 
 
 def cli_wrapper(func):

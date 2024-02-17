@@ -7,11 +7,11 @@ from typing import Optional
 import ffmpeg
 import gevent
 
-from video_converter.src import progress
-from video_converter.src.compressor import compress
-from video_converter.src.conveter import to_mp4
-from video_converter.src.extractor import audio_eliminate, audio_extract
-from video_converter.src.progress import FFmpegTCPSender
+from video_converter import progress
+from video_converter.compressor import compress
+from video_converter.conveter import to_mp4
+from video_converter.extractor import audio_eliminate, audio_extract
+from video_converter.progress import FFmpegTCPSender
 
 
 def _browse_file(string_var):

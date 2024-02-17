@@ -4,7 +4,7 @@ from typing import Optional
 
 import ffmpeg
 
-from video_converter.src import progress
+from video_converter import progress
 
 
 def compress(path: str, crf: Optional[int] = 23) -> None:

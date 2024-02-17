@@ -3,7 +3,7 @@ import sys
 
 import ffmpeg
 
-from video_converter.src import progress
+from video_converter import progress
 
 
 def audio_extract(path: str) -> None:
