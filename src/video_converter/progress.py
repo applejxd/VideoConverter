@@ -1,5 +1,6 @@
 import socket
 import sys
+from typing import Optional
 
 import ffmpeg
 import gevent
@@ -10,14 +11,15 @@ from gevent import monkey
 # monkey.patch_all()
 
 
-def get_available_port(start=49152):
+def get_available_port(start: int = 49152) -> int:
+    """使用可能なポート番号を取得する関数"""
     # "LISTEN" 状態のポート番号をリスト化
-    used_ports = [
+    used_ports = {
         conn.laddr.port for conn in psutil.net_connections() if conn.status == "LISTEN"
-    ]
+    }
     for port in range(start, 65535 + 1):
         # 未使用のポート番号ならreturn
-        if port not in set(used_ports):
+        if port not in used_ports:
             return port
     raise RuntimeError("使用可能なポート番号がありません")
 
@@ -27,14 +29,14 @@ PORT = get_available_port()
 
 # Model (Observer pattern)
 class FFmpegTCPSender:
-    def __init__(self, pbar, total):
-        # Observer (Observer pattern)
+    def __init__(self, pbar: tqdm.tqdm, total: float):
+        """FFmpeg の TCP 送信者"""
+        # Observer pattern
         self.pbar = pbar
-
         self.total = total
         self.time_pre = 0
-
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.connection: Optional[socket.socket] = None
 
     def __del__(self):
         self.sock.close()
@@ -42,10 +44,11 @@ class FFmpegTCPSender:
     def _connect(self, port):
         self.sock.bind(("127.0.0.1", port))
         self.sock.listen(1)
-        connection, client_address = self.sock.accept()
-        return connection
+        self.connection, _ = self.sock.accept()
+        return self.connection
 
-    def _notify_pbar(self, key, value):
+    def _notify_pbar(self, key: str, value: str) -> None:
+        """プログレスバーを更新する"""
         if key == "out_time_ms":
             if value == "N/A":
                 return
@@ -58,7 +61,8 @@ class FFmpegTCPSender:
         self.pbar.update(time - self.time_pre)
         self.time_pre = time
 
-    def tcp_handler(self):
+    def tcp_handler(self, port: int) -> None:
+        """TCP データの受信および処理"""
         global PORT
 
         connection = self._connect(PORT)

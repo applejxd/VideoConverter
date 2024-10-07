@@ -1,16 +1,21 @@
-import os
-import sys
+from pathlib import Path
+from typing import Union
 
 import ffmpeg
 
-from video_converter import progress
+PathLike = Union[str, Path]
 
 
-def to_mp4(path: str) -> None:
+def to_mp4(path: PathLike) -> None:
     """.mp4 へ変換
 
     :param path: 動画のファイルパス
     """
-    mp4_path = f"{os.path.splitext(path)[0]}.mp4"
-    pipeline = ffmpeg.input(path).output(mp4_path)
+    path = Path(path)
+    if not path.is_file():
+        raise FileNotFoundError(f"{path} が見つかりません")
+
+    mp4_path = path.parent / f"{path.stem}.mp4"
+
+    pipeline = ffmpeg.input(str(path)).output(str(mp4_path))
     return pipeline
