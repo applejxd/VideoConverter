@@ -1,21 +1,24 @@
+import os
 from pathlib import Path
-from typing import Union
 
 import ffmpeg
 
-PathLike = Union[str, Path]
 
-
-def to_mp4(path: PathLike) -> None:
+def to_mp4(input_path: str | os.PathLike, output_path: str = "") -> ffmpeg.nodes.Node:
     """.mp4 へ変換
 
-    :param path: 動画のファイルパス
+    :param input_path: 動画のファイルパス
+    :param output_path: 出力ファイルパス (省略した場合は、元のファイル名に".mp4"を付加)
+    :return: .mp4 へ変換するパイプライン
     """
-    path = Path(path)
-    if not path.is_file():
-        raise FileNotFoundError(f"{path} が見つかりません")
+    input_path = Path(input_path)
+    if not input_path.is_file():
+        raise FileNotFoundError(f"{input_path} が見つかりません")
 
-    mp4_path = path.parent / f"{path.stem}.mp4"
+    if output_path == "":
+        output_path = input_path.parent / f"{input_path.stem}.mp4"
+    else:
+        output_path = Path(output_path)
 
-    pipeline = ffmpeg.input(str(path)).output(str(mp4_path))
+    pipeline = ffmpeg.input(str(input_path)).output(str(output_path))
     return pipeline

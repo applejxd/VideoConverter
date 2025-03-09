@@ -5,8 +5,8 @@ from video_converter import progress
 
 
 def cli_wrapper(func: Callable) -> Callable:
-    """CLIラッパーで進捗バーを表示するデコレータ
-    see https://qiita.com/moonwalkerpoday/items/9bd987667a860adf80a2
+    """CLIラッパーで進捗バーを表示するデコレータ.
+    see https://qiita.com/moonwalkerpoday/items/9bd987667a860adf80a2.
 
     :param func: ラップする対象の関数
     :return: ラップされた関数
@@ -18,10 +18,11 @@ def cli_wrapper(func: Callable) -> Callable:
 
         :param path: 処理対象のパス
         :param args: その他の引数
+        
         :param kwargs: キーワード引数
         :return: パイプラインの結果
         """
         pipeline = func(path, *args, **kwargs)
-        progress.run_with_tcp_pbar(path, pipeline)
+        return progress.run_with_tcp_pbar(path, pipeline)
 
     return wrapper
