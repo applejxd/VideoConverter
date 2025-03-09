@@ -6,6 +6,7 @@ from typing import Optional
 
 import ffmpeg
 import gevent
+from tkinterdnd2 import DND_FILES, TkinterDnD
 
 from video_converter import progress
 from video_converter.compressor import compress
@@ -19,6 +20,14 @@ def _browse_file(string_var):
     string_var.set(file_path)
 
 
+def _drop_file(event, string_var):
+    # ドロップされたファイルパスを取得
+    # Windows形式のパス（{C:/path/to/file.mp4}）から通常のパスに変換
+    file_path = event.data.strip('{}')
+    string_var.set(file_path)
+    print(f"ファイルがドロップされました: {file_path}")
+
+
 class StdoutRedirector:
     def __init__(self, text_widget):
         self.text_widget = text_widget
@@ -27,6 +36,10 @@ class StdoutRedirector:
         self.text_widget.insert(tk.END, message)
         # テキストを最後にスクロール
         self.text_widget.see(tk.END)
+        
+    def flush(self):
+        # flushメソッドを追加（sys.stdoutの互換性のため）
+        pass
 
 
 class MyWindow:
@@ -51,7 +64,8 @@ class WindowBuilder:
         self.window = MyWindow()
 
     def create_window(self, geometry: str) -> None:
-        root = tk.Tk()
+        # TkinterDnDを使用してドラッグアンドドロップをサポートするウィンドウを作成
+        root = TkinterDnD.Tk()
         root.geometry(geometry)
         root.title("VideoConverter")
         self.window.root = root
@@ -69,6 +83,9 @@ class WindowBuilder:
         entry = tk.Entry(
             self.window.root, textvariable=self.window.entry_var, width=width
         )
+        # エントリーウィジェットにドラッグアンドドロップを設定
+        entry.drop_target_register(DND_FILES)
+        entry.dnd_bind('<<Drop>>', lambda e: _drop_file(e, self.window.entry_var))
         return entry
 
     def create_convert_button(self, writer):
@@ -133,18 +150,24 @@ class TkPBarWriter:
         window.pb.update()
 
         dt = time.time() - self.start_time
-        mean_speed = dt / step
-        remain_time = mean_speed * self.total - dt
+        mean_speed = dt / step if step > 0 else 0
+        remain_time = mean_speed * (self.total - step) if step > 0 else 0
 
         dt = "{:02d}:{:02d}".format(*divmod(int(dt), 60))
         remain_time = "{:02d}:{:02d}".format(*divmod(int(remain_time), 60))
-        window.percent_label["text"] = f"{int(100*step/self.total):02d}%"
-        window.remain_label["text"] = f"[{dt}<{remain_time}] {mean_speed:.1f}s/it"
+        
+        # StringVarを使用して値を更新
+        window.percent.set(f"{int(100*step/self.total):02d}%")
+        window.remain.set(f"[{dt}<{remain_time}] {mean_speed:.1f}s/it")
 
 
 def create_window() -> MyWindow:
     builder = WindowBuilder()
     builder.create_window(geometry="510x420")
+
+    # ウィンドウ全体にもドラッグアンドドロップを設定
+    builder.window.root.drop_target_register(DND_FILES)
+    builder.window.root.dnd_bind('<<Drop>>', lambda e: _drop_file(e, builder.window.entry_var))
 
     # ファイルパス選択
     browse_button = builder.create_browse_button()
@@ -190,7 +213,7 @@ def convert_and_send(window: MyWindow, pbar_writer: TkPBarWriter) -> None:
         total,
         lambda step: pbar_writer.callback(step, window),
     )
-    greenlet_progress = gevent.spawn(sender.tcp_handler)
+    greenlet_progress = gevent.spawn(sender.tcp_handler, progress.PORT)
 
     # FFmpeg 変換設定
     pipeline = globals()[method_str](path_str)

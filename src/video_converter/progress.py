@@ -80,9 +80,16 @@ class FFmpegTCPSender:
             return
 
         update_value = time - self.time_pre
-        if 0 <= update_value <= self.total - self.pbar.n:
-            self.pbar.update(update_value)
-            self.time_pre = time
+        # tqdmの場合はn属性を使用、それ以外の場合（GUI用のコールバック関数）は直接更新
+        if hasattr(self.pbar, 'n'):
+            if 0 <= update_value <= self.total - self.pbar.n:
+                self.pbar.update(update_value)
+                self.time_pre = time
+        else:
+            # GUI用のコールバック関数の場合
+            if 0 <= update_value <= self.total:
+                self.pbar(time)  # コールバック関数を呼び出し
+                self.time_pre = time
 
     def tcp_handler(self, port: int) -> None:
         """
