@@ -2,11 +2,15 @@
 name = "video_converter"
 version = "0.1.0"
 dependencies = [
+    # dev tools
     "black",
     "isort",
     "fire",
+    "pytest",
+    # interfaces
     "pyinstaller",
     "tqdm",
+    # libraries
     "psutil",
     "gevent",
     "ffmpeg-python",

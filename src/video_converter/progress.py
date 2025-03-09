@@ -79,8 +79,10 @@ class FFmpegTCPSender:
         else:
             return
 
-        self.pbar.update(time - self.time_pre)
-        self.time_pre = time
+        update_value = time - self.time_pre
+        if 0 <= update_value <= self.total - self.pbar.n:
+            self.pbar.update(update_value)
+            self.time_pre = time
 
     def tcp_handler(self, port: int) -> None:
         """
