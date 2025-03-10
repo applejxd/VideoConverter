@@ -1,13 +1,11 @@
+# see https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+
 [project]
 name = "video_converter"
 version = "0.1.0"
 dependencies = [
-    # dev tools
-    "black",
-    "isort",
-    "fire",
-    "pytest",
     # interfaces
+    "fire",
     "pyinstaller",
     "tqdm",
     "tkinterdnd2",
@@ -20,3 +18,14 @@ dependencies = [
 [build-system]
 requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "flake8",
+    "isort",
+    "pytest",
+    "pytest-cov",
+    "sphinx",
+    "sphinx_rtd_theme",
+]
