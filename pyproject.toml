@@ -23,6 +23,7 @@ dependencies = [
     "ffmpeg-python",
 ]
 
+# sphinx, sphinx-rtd-theme の互換性に注意
 [dependency-groups]
 dev = [
     "pre-commit>=4.5.1",
