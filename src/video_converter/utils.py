@@ -18,7 +18,7 @@ def cli_wrapper(func: Callable) -> Callable:
 
         :param path: 処理対象のパス
         :param args: その他の引数
-        
+
         :param kwargs: キーワード引数
         :return: パイプラインの結果
         """

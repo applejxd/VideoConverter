@@ -81,7 +81,7 @@ class FFmpegTCPSender:
 
         update_value = time - self.time_pre
         # tqdmの場合はn属性を使用、それ以外の場合（GUI用のコールバック関数）は直接更新
-        if hasattr(self.pbar, 'n'):
+        if hasattr(self.pbar, "n"):
             if 0 <= update_value <= self.total - self.pbar.n:
                 self.pbar.update(update_value)
                 self.time_pre = time
@@ -138,6 +138,6 @@ def run_with_tcp_pbar(path, pipeline):
         greenlet_progress = gevent.spawn(sender.tcp_handler, PORT)
         greenlet_ffmpeg = gevent.spawn(pipeline.run)
         gevent.joinall([greenlet_progress, greenlet_ffmpeg])
-        
+
         # Return the result of pipeline.run()
         return greenlet_ffmpeg.value

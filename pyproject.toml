@@ -1,7 +1,15 @@
 # see https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+# see https://docs.astral.sh/uv/
+
+# ビルドシステムの指定をすると uv sync で自動でリポジトリをインストール
+# see https://docs.astral.sh/uv/concepts/projects/config/#build-systems
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "video_converter"
+requires-python = "==3.12.*"
 version = "0.1.0"
 dependencies = [
     # interfaces
@@ -15,17 +23,13 @@ dependencies = [
     "ffmpeg-python",
 ]
 
-[build-system]
-requires = ["setuptools >= 61.0"]
-build-backend = "setuptools.build_meta"
-
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
-    "black",
-    "flake8",
-    "isort",
-    "pytest",
-    "pytest-cov",
-    "sphinx",
-    "sphinx_rtd_theme",
+    "pre-commit>=4.5.1",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.14.11",
+    "sphinx>=9.1.0",
+    "sphinx-mdinclude>=0.6.2",
+    "sphinx-rtd-theme>=0.5.1",
 ]

@@ -8,15 +8,11 @@ For Windows 11:
 
 ```powershell
 # Install command
-winget install ffmpeg
+winget install astral-sh.uv Gyan.FFmpeg
 
 # Install dependencies
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
+uv sync
 
-# Library install
-pip install -e .
 # GUI executable creation
 pyinstaller .\video_converter\gui.py --onefile --noconsole
 ```
@@ -38,4 +34,14 @@ python -m video_converter audio_eliminate input.mp4
 
 # Extract audio from video
 python -m video_converter audio_extract input.mp4
+```
+
+## How to develop
+
+```bash
+uv sync --dev
+pre-commit install
+
+# optional
+pre-commit run --all-files
 ```

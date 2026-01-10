@@ -19,7 +19,9 @@ def test_video_path():
         url = "https://github.com/intel-iot-devkit/sample-videos/raw/refs/heads/master/car-detection.mp4"
         urllib.request.urlretrieve(url, str(test_video_path))
         print(f"{test_video_path} をダウンロードしました")
-    assert test_video_path.exists(), f"{test_video_path} が存在しません。ダウンロードに失敗した可能性があります。"
+    assert test_video_path.exists(), (
+        f"{test_video_path} が存在しません。ダウンロードに失敗した可能性があります。"
+    )
     return test_video_path
 
 
@@ -81,7 +83,7 @@ def test_compress(test_video_path, compressed_path):
     pipeline = compress(test_video_path, compressed_path)
 
     # パイプラインを実行
-    result = progress.run_with_tcp_pbar(str(test_video_path), pipeline)
+    _ = progress.run_with_tcp_pbar(str(test_video_path), pipeline)
 
     # 出力ファイルが存在することを確認
     assert compressed_path.exists(), f"{compressed_path} が作成されませんでした"
@@ -101,7 +103,7 @@ def test_to_mp4(test_video_path, mp4_path):
     pipeline = to_mp4(test_video_path, str(mp4_path))
 
     # パイプラインを実行
-    result = progress.run_with_tcp_pbar(str(test_video_path), pipeline)
+    _ = progress.run_with_tcp_pbar(str(test_video_path), pipeline)
 
     # 出力ファイルが存在することを確認
     assert mp4_path.exists(), f"{mp4_path} が作成されませんでした"
@@ -121,7 +123,7 @@ def test_audio_extract(test_video_path, mp3_path):
     pipeline = audio_extract(test_video_path, str(mp3_path))
 
     # パイプラインを実行
-    result = progress.run_with_tcp_pbar(str(test_video_path), pipeline)
+    _ = progress.run_with_tcp_pbar(str(test_video_path), pipeline)
 
     # 出力ファイルが存在することを確認
     assert mp3_path.exists(), f"{mp3_path} が作成されませんでした"
@@ -141,7 +143,7 @@ def test_audio_eliminate(test_video_path, no_audio_path):
     pipeline = audio_eliminate(test_video_path, str(no_audio_path))
 
     # パイプラインを実行
-    result = progress.run_with_tcp_pbar(str(test_video_path), pipeline)
+    _ = progress.run_with_tcp_pbar(str(test_video_path), pipeline)
 
     # 出力ファイルが存在することを確認
     assert no_audio_path.exists(), f"{no_audio_path} が作成されませんでした"

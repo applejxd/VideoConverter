@@ -1,6 +1,4 @@
 import threading
-import time
-import tkinter as tk
 from pathlib import Path
 
 import pytest
@@ -18,6 +16,7 @@ def test_video_path():
 
 def test_gui_creation(test_video_path):
     """GUIが正常に作成されるかテスト"""
+
     # GUIをスレッドで起動（メインスレッドをブロックしないため）
     def run_gui():
         window = create_window()
@@ -27,7 +26,9 @@ def test_gui_creation(test_video_path):
 
     # GUIスレッドを起動
     gui_thread = threading.Thread(target=run_gui)
-    gui_thread.daemon = True  # デーモンスレッドとして起動（メインスレッド終了時に自動終了）
+    gui_thread.daemon = (
+        True  # デーモンスレッドとして起動（メインスレッド終了時に自動終了）
+    )
     gui_thread.start()
 
     # スレッドが終了するまで待機（最大5秒）

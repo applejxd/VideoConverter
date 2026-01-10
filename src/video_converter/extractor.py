@@ -43,5 +43,5 @@ def audio_eliminate(
     else:
         output_path = Path(output_path)
 
-    pipeline = ffmpeg.input(str(input_path)).output(str(output_path), **{'an': None})
+    pipeline = ffmpeg.input(str(input_path)).output(str(output_path), **{"an": None})
     return pipeline

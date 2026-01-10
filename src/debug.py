@@ -1,6 +1,4 @@
-from video_converter import gui
 from video_converter.conveter import to_mp4
-from video_converter.utils import cli_wrapper
 
 
 def main():

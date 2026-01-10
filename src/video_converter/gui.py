@@ -9,9 +9,6 @@ import gevent
 from tkinterdnd2 import DND_FILES, TkinterDnD
 
 from video_converter import progress
-from video_converter.compressor import compress
-from video_converter.conveter import to_mp4
-from video_converter.extractor import audio_eliminate, audio_extract
 from video_converter.progress import FFmpegTCPSender
 
 
@@ -23,7 +20,7 @@ def _browse_file(string_var):
 def _drop_file(event, string_var):
     # ドロップされたファイルパスを取得
     # Windows形式のパス（{C:/path/to/file.mp4}）から通常のパスに変換
-    file_path = event.data.strip('{}')
+    file_path = event.data.strip("{}")
     string_var.set(file_path)
     print(f"ファイルがドロップされました: {file_path}")
 
@@ -36,7 +33,7 @@ class StdoutRedirector:
         self.text_widget.insert(tk.END, message)
         # テキストを最後にスクロール
         self.text_widget.see(tk.END)
-        
+
     def flush(self):
         # flushメソッドを追加（sys.stdoutの互換性のため）
         pass
@@ -85,7 +82,7 @@ class WindowBuilder:
         )
         # エントリーウィジェットにドラッグアンドドロップを設定
         entry.drop_target_register(DND_FILES)
-        entry.dnd_bind('<<Drop>>', lambda e: _drop_file(e, self.window.entry_var))
+        entry.dnd_bind("<<Drop>>", lambda e: _drop_file(e, self.window.entry_var))
         return entry
 
     def create_convert_button(self, writer):
@@ -126,7 +123,7 @@ class WindowBuilder:
         )
 
         self.window.remain = tk.StringVar()
-        self.window.remain = f"[00:00<00:00], 0s/it"
+        self.window.remain = "[00:00<00:00], 0s/it"
         remain = tk.Label(self.window.root, textvariable=self.window.remain)
 
         return percent, self.window.pb, remain
@@ -155,9 +152,9 @@ class TkPBarWriter:
 
         dt = "{:02d}:{:02d}".format(*divmod(int(dt), 60))
         remain_time = "{:02d}:{:02d}".format(*divmod(int(remain_time), 60))
-        
+
         # StringVarを使用して値を更新
-        window.percent.set(f"{int(100*step/self.total):02d}%")
+        window.percent.set(f"{int(100 * step / self.total):02d}%")
         window.remain.set(f"[{dt}<{remain_time}] {mean_speed:.1f}s/it")
 
 
@@ -167,7 +164,9 @@ def create_window() -> MyWindow:
 
     # ウィンドウ全体にもドラッグアンドドロップを設定
     builder.window.root.drop_target_register(DND_FILES)
-    builder.window.root.dnd_bind('<<Drop>>', lambda e: _drop_file(e, builder.window.entry_var))
+    builder.window.root.dnd_bind(
+        "<<Drop>>", lambda e: _drop_file(e, builder.window.entry_var)
+    )
 
     # ファイルパス選択
     browse_button = builder.create_browse_button()
