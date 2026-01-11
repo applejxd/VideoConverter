@@ -21,6 +21,8 @@ dependencies = [
     "psutil",
     "gevent",
     "ffmpeg-python",
+    "sphinx>=8.2,<9",
+    "sphinx-autobuild>=2025.8.25",
 ]
 
 # sphinx, sphinx-rtd-theme の互換性に注意

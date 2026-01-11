@@ -15,12 +15,13 @@ release = "0.1.0"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.githubpages",
-    "sphinx_mdinclude",
-    "sphinx.ext.graphviz",
-    "sphinx.ext.inheritance_diagram",
+    "sphinx.ext.autodoc",  # docstrings から自動的に API ドキュメントを生成
+    "sphinx.ext.apidoc",  # 自動的にモジュールのドキュメントを生成
+    "sphinx.ext.viewcode",  # ドキュメントからソースコードへのリンクを追加
+    "sphinx.ext.inheritance_diagram",  # クラスの継承図を生成
+    "sphinx.ext.graphviz",  # Graphviz を使って図を埋め込む
+    "sphinx_mdinclude",  # Markdown 読み込みに対応
+    "sphinx.ext.githubpages",  # GitHub Pages に公開するための補助ファイルを出力
 ]
 
 templates_path = ["_templates"]
@@ -28,16 +29,18 @@ exclude_patterns = []
 
 language = "en"
 
-# 型ヒントを有効
-autodoc_typehints = "description"
-# __init__()も出力
-autoclass_content = "both"
+autoclass_content = "both"  # __init__() も出力
+autodoc_typehints = "description"  # 型ヒントを有効化
 autodoc_default_options = {
-    # プライベートメソッドも出力
-    "private-members": True,
-    # 継承を表示
-    "show-inheritance": True,
+    "private-members": True,  # プライベートメソッドも出力
+    "show-inheritance": True,  # 継承を表示
 }
+
+# sphinx-apidoc 自動実行
+# see https://www.sphinx-doc.org/en/master/usage/extensions/apidoc.html
+apidoc_modules = [
+    {"path": "../../../src", "destination": "./api", "separate_modules": True},
+]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
