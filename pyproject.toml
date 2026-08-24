@@ -27,6 +27,9 @@ dependencies = [
     "ffmpeg-python",
 ]
 
+[project.scripts]
+video-converter = "video_converter.__main__:main"
+
 [project.urls]
 Homepage = "https://github.com/applejxd/VideoConverter"
 Documentation = "https://applejxd.github.io/VideoConverter/"
@@ -43,3 +46,20 @@ dev = [
     "sphinx-mdinclude>=0.6.2",
     "sphinx-rtd-theme>=1.3.0",
 ]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle
+    "F",   # Pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# anyio の pytest プラグインは ssl を先に import してしまい、
+# conftest.py の gevent monkey patch より先回りして警告を出すため無効化する
+addopts = "-p no:anyio"

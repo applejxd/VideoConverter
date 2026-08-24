@@ -4,18 +4,22 @@ FFmpeg の ``-progress tcp://127.0.0.1:<port>`` オプションを利用し、�
 進捗を別プロセスから受信する。受信側は Observer パターンで実装されており、
 :class:`FFmpegTCPSender` (Subject) が tqdm プログレスバーまたは GUI の
 コールバック関数 (Observer) へ進捗を通知する。
+
+FFmpeg の実行と進捗の受信を並行させるために ``gevent`` を用いるため、
+:func:`run_pipeline_with_observer` を呼ぶ前に ``gevent.monkey.patch_all()``
+が適用されている必要がある。CLI では :mod:`video_converter.__main__` の
+先頭で適用している。
 """
 
 import os
 import socket
-from typing import Callable, Optional, Union
+import warnings
+from collections.abc import Callable
 
 import ffmpeg
 import gevent
 import tqdm
 from gevent import monkey
-
-monkey.patch_all()
 
 #: FFmpeg からの進捗用 TCP 接続を待つ既定の秒数。
 #: FFmpeg が接続前に終了した場合に待ち続けないための上限。
@@ -26,11 +30,30 @@ DEFAULT_ACCEPT_TIMEOUT = 30.0
 tqdm.tqdm.monitor_interval = 0
 
 
+def _ensure_monkey_patched() -> None:
+    """``gevent`` の monkey patch が適用済みかを確認する。
+
+    未適用の場合は、この時点で ``socket`` を patch する。既に ``ssl`` などが
+    import されている状態での patch は不完全になりうるため、あわせて警告する。
+    """
+    if monkey.is_module_patched("socket"):
+        return
+
+    warnings.warn(
+        "gevent の monkey patch が未適用です。"
+        " video_converter.__main__ を経由しない場合は、他のモジュールを"
+        " import する前に gevent.monkey.patch_all() を呼んでください",
+        RuntimeWarning,
+        stacklevel=3,
+    )
+    monkey.patch_all()
+
+
 # Model (Observer pattern)
 class FFmpegTCPSender:
     def __init__(
         self,
-        pbar: Union[tqdm.tqdm, Callable[[float], None]],
+        pbar: tqdm.tqdm | Callable[[float], None],
         total: float,
         timeout: float = DEFAULT_ACCEPT_TIMEOUT,
     ):
@@ -56,7 +79,7 @@ class FFmpegTCPSender:
         # 取られる余地がある
         self.sock.bind(("127.0.0.1", 0))
         self.sock.listen(1)
-        self.connection: Optional[socket.socket] = None
+        self.connection: socket.socket | None = None
 
     @property
     def port(self) -> int:
@@ -88,7 +111,7 @@ class FFmpegTCPSender:
         self.sock.settimeout(self.timeout)
         try:
             self.connection, _ = self.sock.accept()
-        except socket.timeout as exc:
+        except TimeoutError as exc:
             raise TimeoutError(
                 f"FFmpeg が {self.timeout} 秒以内に "
                 f"127.0.0.1:{self.port} へ接続しませんでした"
@@ -149,7 +172,7 @@ class FFmpegTCPSender:
             self.close()
 
 
-def probe_duration(path: Union[str, os.PathLike]) -> float:
+def probe_duration(path: str | os.PathLike) -> float:
     """動画の合計再生時間を取得する。
 
     :param path: 動画のファイルパス。
@@ -160,10 +183,10 @@ def probe_duration(path: Union[str, os.PathLike]) -> float:
 
 def run_pipeline_with_observer(
     pipeline: ffmpeg.nodes.Node,
-    observer: Union[tqdm.tqdm, Callable[[float], None]],
+    observer: tqdm.tqdm | Callable[[float], None],
     total: float,
     timeout: float = DEFAULT_ACCEPT_TIMEOUT,
-) -> tuple[Optional[bytes], Optional[bytes]]:
+) -> tuple[bytes | None, bytes | None]:
     """FFmpeg を実行し、進捗を Observer へ通知する。
 
     :param pipeline: FFmpeg の pipeline オブジェクト。
@@ -177,6 +200,8 @@ def run_pipeline_with_observer(
     :raises TimeoutError: FFmpeg が制限時間内に進捗用の TCP 接続を
         行わなかった場合。
     """
+    _ensure_monkey_patched()
+
     # 先に bind してから FFmpeg へポート番号を伝えるため、
     # 取得したポートを他プロセスに奪われる余地がない
     sender = FFmpegTCPSender(observer, total, timeout)
@@ -200,8 +225,8 @@ def run_pipeline_with_observer(
 
 
 def run_with_tcp_pbar(
-    path: Union[str, os.PathLike], pipeline: ffmpeg.nodes.Node
-) -> tuple[Optional[bytes], Optional[bytes]]:
+    path: str | os.PathLike, pipeline: ffmpeg.nodes.Node
+) -> tuple[bytes | None, bytes | None]:
     """
     FFmpeg の実行時に TCP 通信でプログレスバーを表示する。
 
