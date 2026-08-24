@@ -19,6 +19,12 @@ jobs:
       # peaceiris/actions-gh-pages が gh-pages ブランチへ push するために必要
       contents: write
 
+    # ランナーのシステム Python には tkinter が含まれず、autodoc が gui.py を
+    # import できない。uv が管理する Python (tkinter 同梱) の使用を強制する
+    env:
+      UV_PYTHON: "3.12"
+      UV_PYTHON_PREFERENCE: only-managed
+
     steps:
       - uses: actions/checkout@v4
 
@@ -28,14 +34,15 @@ jobs:
           enable-cache: true
 
       - name: Set up Python
-        run: uv python install
+        run: uv python install 3.12
 
       - name: Install dependencies
         run: uv sync --dev
 
       # autodoc が gui.py を import するため tkinter が必要
       - name: Check tkinter availability
-        run: uv run python -c "import tkinter, tkinterdnd2; print(tkinter.TkVersion)"
+        run: |
+          uv run python -c "import sys, tkinter, tkinterdnd2, _tkinter; print(sys.version); print(sys.executable); print('Tk', _tkinter.TK_VERSION)"
 
       - name: Build documentation
         run: uv run sphinx-build -M html docs/sphinx/source docs/sphinx/build -W --keep-going
