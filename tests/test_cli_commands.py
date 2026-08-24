@@ -1,4 +1,3 @@
-import urllib.request
 from pathlib import Path
 
 import ffmpeg
@@ -8,21 +7,6 @@ from video_converter import progress
 from video_converter.compressor import compress
 from video_converter.converter import to_mp4
 from video_converter.extractor import audio_eliminate, audio_extract
-
-
-@pytest.fixture
-def test_video_path():
-    """テスト用の動画ファイルのパス"""
-    test_video_path = Path(__file__).parent / "car-detection.mp4"
-    if not test_video_path.exists():
-        print(f"{test_video_path} が存在しないため、ダウンロードします...")
-        url = "https://github.com/intel-iot-devkit/sample-videos/raw/refs/heads/master/car-detection.mp4"
-        urllib.request.urlretrieve(url, str(test_video_path))
-        print(f"{test_video_path} をダウンロードしました")
-    assert test_video_path.exists(), (
-        f"{test_video_path} が存在しません。ダウンロードに失敗した可能性があります。"
-    )
-    return test_video_path
 
 
 @pytest.fixture
