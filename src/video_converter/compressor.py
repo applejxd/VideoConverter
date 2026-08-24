@@ -18,7 +18,8 @@ def compress(
     """動画を圧縮
 
     :param input_path: 動画のファイルパス
-    :param output_path: 圧縮後の動画のファイルパス (省略した場合は、元のファイル名に"_compressed"を付加)
+    :param output_path: 圧縮後の動画のファイルパス
+        (省略した場合は、元のファイル名に"_compressed"を付加)
     :param crf: 圧縮後の動画品質 (低いほうが品質が高い)
     :return: 圧縮後の動画のパイプライン。出力先が既に存在する場合は上書きする
     :raises FileNotFoundError: 入力パスがファイルとして存在しない場合

@@ -3,8 +3,9 @@
 変換関数が返す pipeline を実行し、進捗バーを表示するデコレータを提供する。
 """
 
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 from video_converter import progress
 

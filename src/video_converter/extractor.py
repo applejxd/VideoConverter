@@ -32,7 +32,8 @@ def audio_eliminate(
     """音声を削除
 
     :param input_path: 動画のファイルパス
-    :param output_path: 出力ファイルパス (省略した場合は、元のファイル名に"_wo_audio.mp4"を付加)
+    :param output_path: 出力ファイルパス
+        (省略した場合は、元のファイル名に"_wo_audio.mp4"を付加)
     :return: 音声を削除するパイプライン。出力先が既に存在する場合は上書きする
     :raises FileNotFoundError: 入力パスがファイルとして存在しない場合
     :raises ValueError: 入力パスと出力パスが同一のファイルを指す場合

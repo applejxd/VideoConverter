@@ -10,7 +10,6 @@ import sys
 import time
 import tkinter as tk
 from tkinter import filedialog, ttk
-from typing import Optional
 
 from tkinterdnd2 import DND_FILES, TkinterDnD
 
@@ -86,17 +85,17 @@ class MyWindow:
 
     def __init__(self):
         # ウィンドウ
-        self.root: Optional[tk.Tk] = None
+        self.root: tk.Tk | None = None
 
         # ファイルパス
-        self.entry_var: Optional[tk.StringVar] = None
+        self.entry_var: tk.StringVar | None = None
         # 変換メソッドの種類
-        self.selected_method: Optional[tk.StringVar] = None
+        self.selected_method: tk.StringVar | None = None
 
         # プログレスバー
-        self.percent: Optional[tk.StringVar] = None
-        self.pb: Optional[ttk.Progressbar] = None
-        self.remain: Optional[tk.StringVar] = None
+        self.percent: tk.StringVar | None = None
+        self.pb: ttk.Progressbar | None = None
+        self.remain: tk.StringVar | None = None
 
 
 class WindowBuilder:
@@ -189,7 +188,7 @@ class WindowBuilder:
                 text=text,
                 value=method,
             )
-            for text, method in zip(texts, methods)
+            for text, method in zip(texts, methods, strict=True)
         ]
         return radio_buttons
 
@@ -242,7 +241,7 @@ class TkPBarWriter:
         設定する。
     """
 
-    def __init__(self, total: Optional[float] = None):
+    def __init__(self, total: float | None = None):
         self.total = total
         self.start_time = time.time()
 
