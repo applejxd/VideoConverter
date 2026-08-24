@@ -199,3 +199,5 @@ pyrightconfig.json
 *.mov
 *.webm
 *.gif
+# ローカル作業用の一時ディレクトリ
+.tmp/
