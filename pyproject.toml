@@ -4,13 +4,18 @@
 # ビルドシステムの指定をすると uv sync で自動でリポジトリをインストール
 # see https://docs.astral.sh/uv/concepts/projects/config/#build-systems
 [build-system]
-requires = ["setuptools >= 61.0"]
+requires = ["setuptools >= 77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "video_converter"
 requires-python = "==3.12.*"
 version = "0.1.0"
+description = "Python CLI (Fire) and GUI (Tkinter) interface examples for ffmpeg-python"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "applejxd" }]
 dependencies = [
     # interfaces
     "fire",
@@ -21,9 +26,11 @@ dependencies = [
     "psutil",
     "gevent",
     "ffmpeg-python",
-    "sphinx>=8.2,<9",
-    "sphinx-autobuild>=2025.8.25",
 ]
+
+[project.urls]
+Homepage = "https://github.com/applejxd/VideoConverter"
+Documentation = "https://applejxd.github.io/VideoConverter/"
 
 # sphinx, sphinx-rtd-theme の互換性に注意
 [dependency-groups]
@@ -32,7 +39,8 @@ dev = [
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "ruff>=0.14.11",
-    "sphinx>=8,<9",
+    "sphinx>=8.2,<9",
+    "sphinx-autobuild>=2025.8.25",
     "sphinx-mdinclude>=0.6.2",
     "sphinx-rtd-theme>=1.3.0",
 ]
