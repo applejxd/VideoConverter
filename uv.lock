@@ -816,9 +816,13 @@ dependencies = [
     { name = "ffmpeg-python" },
     { name = "fire" },
     { name = "gevent" },
-    { name = "pyinstaller" },
     { name = "tkinterdnd2" },
     { name = "tqdm" },
+]
+
+[package.optional-dependencies]
+build = [
+    { name = "pyinstaller" },
 ]
 
 [package.dev-dependencies]
@@ -838,10 +842,11 @@ requires-dist = [
     { name = "ffmpeg-python" },
     { name = "fire" },
     { name = "gevent" },
-    { name = "pyinstaller" },
+    { name = "pyinstaller", marker = "extra == 'build'" },
     { name = "tkinterdnd2" },
     { name = "tqdm" },
 ]
+provides-extras = ["build"]
 
 [package.metadata.requires-dev]
 dev = [

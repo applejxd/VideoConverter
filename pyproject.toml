@@ -19,13 +19,16 @@ authors = [{ name = "applejxd" }]
 dependencies = [
     # interfaces
     "fire",
-    "pyinstaller",
     "tqdm",
     "tkinterdnd2",
     # libraries
     "gevent",
     "ffmpeg-python",
 ]
+
+# 実行ファイルの作成にのみ必要なため、任意の依存として分離する
+[project.optional-dependencies]
+build = ["pyinstaller"]
 
 [project.scripts]
 video-converter = "video_converter.__main__:main"
