@@ -6,7 +6,7 @@ import pytest
 
 from video_converter import progress
 from video_converter.compressor import compress
-from video_converter.conveter import to_mp4
+from video_converter.converter import to_mp4
 from video_converter.extractor import audio_eliminate, audio_extract
 
 

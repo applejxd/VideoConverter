@@ -1,3 +1,8 @@
+"""動画の形式を変換するモジュール。
+
+現状は .mp4 への変換のみを提供する。
+"""
+
 import os
 from pathlib import Path
 
