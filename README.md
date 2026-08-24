@@ -34,11 +34,15 @@ winget install astral-sh.uv Gyan.FFmpeg
 # Install dependencies
 uv sync
 
-# GUI executable creation
-pyinstaller .\src\video_converter\gui.py --onefile --noconsole
+# GUI executable creation (PyInstaller lives in the optional `build` extra)
+uv sync --extra build
+uv run pyinstaller .\src\video_converter\gui.py --onefile --noconsole
 ```
 
 ## How to use
+
+After installation the `video-converter` command is also available, so
+`video-converter gui` behaves the same as the module form below.
 
 ```powershell
 # Open GUI
@@ -63,6 +67,11 @@ python -m video_converter --help
 `output_path` is optional for every command. When omitted, the output is written
 next to the input file using the naming rules in the table above.
 
+An existing output file is overwritten without asking. If the resolved output
+would be the same file as the input (for example `to_mp4 input.mp4` with no
+`output_path`), the command stops with a `ValueError` instead of destroying the
+input.
+
 ## How to develop
 
 ```bash
@@ -84,8 +93,11 @@ make check   # lint + test + html
 ```
 
 The test suite downloads a small sample video into `tests/` on first run, and
-requires FFmpeg to be installed. `tests/test_gui.py` opens a real Tk window, so
-it needs a display.
+requires FFmpeg to be installed. `tests/test_gui.py` opens a real Tk window and
+is skipped automatically when no display or usable Tcl/Tk is available.
+
+`ruff` and `pytest` run in CI through the `ci` workflow on every push and pull
+request.
 
 ## Documentation
 

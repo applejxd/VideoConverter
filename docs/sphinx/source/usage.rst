@@ -20,6 +20,7 @@ CLI
 ---
 
 ``python -m video_converter <サブコマンド>`` の形式で実行します。
+インストール後は ``video-converter <サブコマンド>`` でも起動できます。
 引数の解析には Fire を利用しているため、``--help`` で各コマンドの
 引数を確認できます。
 
@@ -78,6 +79,19 @@ CLI
 入力ファイルが存在しない場合は ``FileNotFoundError`` が送出されます。
 変換中は tqdm による進捗バーが表示されます。
 
+.. note::
+
+   出力先のファイルが既に存在する場合は、確認せずに上書きします。
+
+.. note::
+
+   出力先が入力と同じファイルを指す場合は ``ValueError`` で停止します。
+   ``to_mp4 input.mp4`` のように入力と同じ拡張子で ``output_path`` を
+   省略した場合が該当します。別の出力先を明示してください。
+
+FFmpeg が異常終了した場合は ``ffmpeg.Error`` が、進捗用の TCP 接続が
+制限時間内に行われなかった場合は ``TimeoutError`` が送出されます。
+
 GUI
 ---
 
@@ -98,8 +112,10 @@ GUI
 実行ファイルの作成
 ------------------
 
-PyInstaller で単一実行ファイルにまとめられます。
+PyInstaller で単一実行ファイルにまとめられます。PyInstaller は任意の依存
+(``build`` extra) のため、先にインストールしてください。
 
 .. code-block:: powershell
 
-   pyinstaller .\src\video_converter\gui.py --onefile --noconsole
+   uv sync --extra build
+   uv run pyinstaller .\src\video_converter\gui.py --onefile --noconsole

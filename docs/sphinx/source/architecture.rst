@@ -17,12 +17,27 @@
    ┌──────────────────────────────────────────────┐
    │ compressor / converter / extractor           │
    │  → ffmpeg.nodes.Node (pipeline) を返すだけ    │
+   │  paths.resolve_io_paths で入出力を確定        │
    └──────────────────────┬───────────────────────┘
                           ▼
    ┌──────────────────────────────────────────────┐
    │ progress.py                                  │
+   │  run_pipeline_with_observer                  │
    │  pipeline.run() + TCP 経由の進捗受信          │
    └──────────────────────────────────────────────┘
+
+入出力パスの解決
+----------------
+
+入力の存在確認、既定の出力先の決定、入力と出力が同一かの判定は
+:func:`~video_converter.paths.resolve_io_paths` にまとめています。
+このモジュールは ``gevent`` にも ``progress`` にも依存しないため、
+パス解決のためだけに import しても副作用がありません。
+
+出力先が入力と同じファイルを指す場合は ``ValueError`` で停止します。
+``to_mp4`` に ``.mp4`` を渡して ``output_path`` を省略した場合などが
+これにあたり、そのまま実行すると FFmpeg が同じファイルを読み書きして
+入力を破壊するためです。
 
 pipeline を返す設計
 -------------------
@@ -37,24 +52,40 @@ pipeline を返す設計
 ``-progress tcp://...`` を追加できます。変換の定義と実行タイミングを
 分離しているため、CLI と GUI で同じ変換関数を再利用できます。
 
+いずれの pipeline にも ``overwrite_output()`` を付けているため、出力先が
+既に存在する場合は上書きします。これが無いと FFmpeg が
+``Overwrite? [y/N]`` の確認で停止し、進捗用の TCP 接続をしないまま終了して
+変換が破綻します。
+
 進捗の取得方法
 --------------
 
 FFmpeg は ``-progress <URL>`` オプションを与えると、``key=value`` 形式の
 進捗情報を指定先へ書き出します。本ライブラリはこれを TCP で受け取ります。
 
-#. :func:`~video_converter.progress.get_available_port` が ``psutil`` で
-   ``LISTEN`` 状態のポートを調べ、未使用のポート (既定は 49152 以降) を選ぶ。
+#. :class:`~video_converter.progress.FFmpegTCPSender` が
+   ``bind(("127.0.0.1", 0))`` で OS に空きポートを割り当てさせ、
+   :attr:`~video_converter.progress.FFmpegTCPSender.port` で番号を公開する。
+   空きを探してから改めて ``bind`` すると、その間に別プロセスへ取られる
+   余地があるため、先に ``bind`` してから番号を読み出す。
 #. pipeline に ``-progress tcp://127.0.0.1:<port>`` を付与する。
 #. :meth:`~video_converter.progress.FFmpegTCPSender.tcp_handler` が
-   そのポートで待ち受け、受信した行を ``key`` と ``value`` に分解する。
+   接続を受け付け、受信した行を ``key`` と ``value`` に分解する。
 #. ``out_time_ms`` から変換済みの再生時間を算出し、進捗として通知する。
    ``progress=end`` を受け取った時点で合計時間へ丸める。
 
 FFmpeg の実行と進捗の受信は同時に行う必要があるため、``gevent`` の
 greenlet を 2 つ ``spawn`` して ``joinall`` で待ち合わせています。
-``progress.py`` の冒頭で ``monkey.patch_all()`` を呼び、標準ライブラリの
-ソケットを協調的にしています。
+``joinall`` は greenlet の例外を伝播しないため、待ち合わせ後に
+``successful()`` を確認して例外を再送出します。あわせて FFmpeg 側の
+greenlet に ``link_exception`` を張り、FFmpeg が接続前に失敗した場合は
+進捗側の待ち受けを直ちに打ち切ります。接続を待つ ``accept()`` にも
+タイムアウト (:data:`~video_converter.progress.DEFAULT_ACCEPT_TIMEOUT`)
+を設けており、これらが無いと FFmpeg の失敗時にハングします。
+
+``gevent`` の ``monkey.patch_all()`` は、他のモジュールが ``ssl`` や
+``socket`` を import するより先に適用する必要があるため、ライブラリ側では
+なく :mod:`video_converter.__main__` の先頭で呼んでいます。
 
 Observer パターン
 -----------------
