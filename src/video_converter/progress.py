@@ -72,14 +72,19 @@ class FFmpegTCPSender:
         self.total = total
         self.time_pre = 0
         self.timeout = timeout
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # ポート番号 0 を指定して OS に空きポートを割り当てさせる。
-        # 事前に空きを探して後から bind すると、その間に別プロセスへ
-        # 取られる余地がある
-        self.sock.bind(("127.0.0.1", 0))
-        self.sock.listen(1)
+        # bind や listen が失敗した場合でも close() が動くよう、
+        # ソケットを作る前に属性を用意しておく
         self.connection: socket.socket | None = None
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            # ポート番号 0 を指定して OS に空きポートを割り当てさせる。
+            # 事前に空きを探して後から bind すると、その間に別プロセスへ
+            # 取られる余地がある
+            self.sock.bind(("127.0.0.1", 0))
+            self.sock.listen(1)
+        except OSError:
+            self.sock.close()
+            raise
 
     @property
     def port(self) -> int:
@@ -97,8 +102,13 @@ class FFmpegTCPSender:
         self.sock.close()
 
     def __del__(self) -> None:
-        """デストラクタ。ソケットを閉じる。"""
-        self.close()
+        """デストラクタ。ソケットを閉じる。
+
+        ``__init__`` が途中で失敗した場合は属性が揃っていないため、
+        存在を確認してから閉じる。
+        """
+        if getattr(self, "sock", None) is not None:
+            self.close()
 
     def _connect(self) -> socket.socket:
         """
@@ -116,7 +126,6 @@ class FFmpegTCPSender:
                 f"FFmpeg が {self.timeout} 秒以内に "
                 f"127.0.0.1:{self.port} へ接続しませんでした"
             ) from exc
-        return self.connection
         return self.connection
 
     def _notify_pbar(self, key: str, value: str) -> None:

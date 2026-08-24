@@ -9,7 +9,7 @@
 import sys
 import time
 import tkinter as tk
-from tkinter import filedialog, ttk
+from tkinter import filedialog, messagebox, ttk
 
 from tkinterdnd2 import DND_FILES, TkinterDnD
 
@@ -243,8 +243,8 @@ class WindowBuilder:
         """標準出力を表示するコンソールを生成する。
 
         副作用として ``sys.stdout`` を :class:`StdoutRedirector` へ差し替え、
-        ウィンドウが破棄された時点で元の ``sys.stdout`` へ戻すハンドラを
-        登録する。
+        ルートウィンドウが破棄された時点で元の ``sys.stdout`` へ戻す
+        ハンドラを登録する。
 
         :param height: コンソールの高さ (行数)。
         :param width: コンソールの幅 (文字数)。
@@ -254,13 +254,20 @@ class WindowBuilder:
 
         original_stdout = sys.stdout
         sys.stdout = StdoutRedirector(console)
+        root = self.window.root
 
-        def restore_stdout() -> None:
-            """差し替えた ``sys.stdout`` を元に戻してウィンドウを破棄する。"""
-            sys.stdout = original_stdout
-            self.window.root.destroy()
+        def restore_stdout(event: "tk.Event") -> None:
+            """ルートウィンドウの破棄時に ``sys.stdout`` を元へ戻す。
 
-        self.window.root.protocol("WM_DELETE_WINDOW", restore_stdout)
+            :param event: ``<Destroy>`` イベント。子ウィジェットの破棄でも
+                発火するため、ルート自身かどうかを確認する。
+            """
+            if event.widget is root:
+                sys.stdout = original_stdout
+
+        # WM_DELETE_WINDOW は「閉じるボタン」経由でしか発火しないため、
+        # destroy() を直接呼ばれた場合にも対応できる <Destroy> を使う
+        root.bind("<Destroy>", restore_stdout, add="+")
 
         return console
 
@@ -357,6 +364,25 @@ def convert_and_send(window: MyWindow, pbar_writer: TkPBarWriter) -> None:
 
     FFmpeg の実行と進捗受信を gevent の greenlet で並行に動かし、
     両者の完了を待ち合わせる。
+
+    変換に失敗した場合、例外はそのままでは Tk が ``sys.stderr`` へ出力して
+    しまい、コンソール領域 (``sys.stdout`` を転送) にも表示されない。
+    ``--noconsole`` でビルドした実行ファイルでは何も見えなくなるため、
+    ここで捕捉してダイアログとコンソールの両方へ表示する。
+
+    :param window: 入力値と進捗ウィジェットを保持するウィンドウ。
+    :param pbar_writer: 進捗をウィジェットへ反映するライター。
+    """
+    try:
+        _convert(window, pbar_writer)
+    except Exception as exc:  # noqa: BLE001
+        message = f"{type(exc).__name__}: {exc}"
+        print(f"変換に失敗しました: {message}")
+        messagebox.showerror("変換に失敗しました", message)
+
+
+def _convert(window: MyWindow, pbar_writer: TkPBarWriter) -> None:
+    """GUI の入力内容にもとづき変換を実行する (例外はそのまま送出する)。
 
     :param window: 入力値と進捗ウィジェットを保持するウィンドウ。
     :param pbar_writer: 進捗をウィジェットへ反映するライター。

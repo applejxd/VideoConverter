@@ -1,60 +1,66 @@
-import queue
-import threading
+import subprocess
+import sys
 
 import pytest
 
-tkinter = pytest.importorskip("tkinter")
+pytest.importorskip("tkinter")
+
+#: GUI を生成できるかを別プロセスで確認するためのコード。
+#: tkinterdnd2 は環境によっては Xlib のアサーション失敗で SIGABRT を送出し、
+#: プロセスごと落とす。これは Python の例外として捕捉できないため、
+#: 判定は必ず別プロセスで行う。
+_PROBE = "from tkinterdnd2 import TkinterDnD; TkinterDnD.Tk().destroy()"
 
 
-def _tk_available() -> bool:
-    """Tk のウィンドウを生成できる環境かどうかを判定する。
+def _gui_available() -> bool:
+    """ドラッグ&ドロップ対応のウィンドウを生成できる環境かを判定する。
 
     :return: 生成できる場合は ``True``。
     """
     try:
-        root = tkinter.Tk()
-    except tkinter.TclError:
+        completed = subprocess.run(
+            [sys.executable, "-c", _PROBE],
+            capture_output=True,
+            timeout=60,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
         return False
-    root.destroy()
-    return True
+    return completed.returncode == 0
 
 
-requires_tk = pytest.mark.skipif(
-    not _tk_available(),
-    reason="Tk のウィンドウを生成できない環境 (ディスプレイまたは Tcl/Tk が無い)",
+requires_gui = pytest.mark.skipif(
+    not _gui_available(),
+    reason=(
+        "GUI を生成できない環境 (ディスプレイ、Tcl/Tk、または tkdnd が利用できない)"
+    ),
 )
 
 
-@requires_tk
+@requires_gui
 def test_gui_creation():
-    """GUIが正常に作成されるかテスト"""
+    """ウィンドウが生成でき、破棄時に sys.stdout が復元されることを確認する。
+
+    mainloop() は呼ばない。conftest.py の monkey.patch_all() により
+    threading は greenlet 化されており、mainloop() のようにハブへ制御を
+    返さないブロッキング呼び出しを別スレッドで動かすと
+    join(timeout=...) が機能しないため。
+    """
     from video_converter.gui import create_window
 
-    errors: queue.Queue[BaseException] = queue.Queue()
+    original_stdout = sys.stdout
+    window = create_window()
+    try:
+        assert window.root is not None
+        # 保留中のイベントを処理し、ウィジェットが実際に配置できることを確認する
+        window.root.update()
+        assert sys.stdout is not original_stdout, (
+            "コンソールへの sys.stdout 差し替えが行われていません"
+        )
+    finally:
+        window.root.destroy()
+        window.root.update()
 
-    # GUIをスレッドで起動（メインスレッドをブロックしないため）
-    def run_gui():
-        try:
-            window = create_window()
-            # 短時間だけGUIを表示してから閉じる
-            window.root.after(1000, window.root.destroy)
-            window.root.mainloop()
-        except BaseException as exc:  # noqa: BLE001
-            errors.put(exc)
-
-    # GUIスレッドを起動
-    gui_thread = threading.Thread(target=run_gui)
-    # デーモンスレッドとして起動（メインスレッド終了時に自動終了）
-    gui_thread.daemon = True
-    gui_thread.start()
-
-    # スレッドが終了するまで待機（最大5秒）
-    gui_thread.join(timeout=5)
-
-    # スレッド内で例外が出ていないことを確認する。
-    # is_alive() だけを見ると、例外で死んだ場合も「正常終了」と誤判定する
-    if not errors.empty():
-        raise AssertionError(f"GUI スレッドで例外が発生しました: {errors.get()}")
-
-    # スレッドが正常に終了したことを確認
-    assert not gui_thread.is_alive(), "GUIスレッドが正常に終了しませんでした"
+    assert sys.stdout is original_stdout, (
+        "ウィンドウ破棄後に sys.stdout が復元されていません"
+    )

@@ -15,6 +15,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       # peaceiris/actions-gh-pages が gh-pages ブランチへ push するために必要
       contents: write
