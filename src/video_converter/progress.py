@@ -1,5 +1,14 @@
+"""FFmpeg の進捗を TCP 経由で受け取り、プログレスバーへ反映するモジュール。
+
+FFmpeg の ``-progress tcp://127.0.0.1:<port>`` オプションを利用し、変換の
+進捗を別プロセスから受信する。受信側は Observer パターンで実装されており、
+:class:`FFmpegTCPSender` (Subject) が tqdm プログレスバーまたは GUI の
+コールバック関数 (Observer) へ進捗を通知する。
+"""
+
+import os
 import socket
-from typing import Optional
+from typing import Callable, Optional, Union
 
 import ffmpeg
 import gevent
@@ -34,11 +43,13 @@ PORT = get_available_port()
 
 # Model (Observer pattern)
 class FFmpegTCPSender:
-    def __init__(self, pbar: tqdm.tqdm, total: float):
+    def __init__(self, pbar: Union[tqdm.tqdm, Callable[[float], None]], total: float):
         """
-        FFmpeg の TCP 送信者。
+        FFmpeg の進捗を TCP で受信し、プログレスバーへ通知する Subject。
 
-        :param pbar: tqdm プログレスバー。
+        :param pbar: 進捗の通知先 (Observer)。``n`` 属性を持つ tqdm プログレス
+            バー、または経過秒数を 1 引数で受け取るコールバック関数のいずれか。
+            どちらであるかは :meth:`_notify_pbar` が実行時に判別する。
         :param total: 動画の合計時間 (秒)。
         """
         # Observer pattern
@@ -48,15 +59,16 @@ class FFmpegTCPSender:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connection: Optional[socket.socket] = None
 
-    def __del__(self):
+    def __del__(self) -> None:
+        """デストラクタ。ソケットを閉じる。"""
         self.sock.close()
 
-    def _connect(self, port):
+    def _connect(self, port: int) -> socket.socket:
         """
         TCP 接続を確立する。
 
         :param port: ポート番号。
-        :return: socket.socket オブジェクト。
+        :return: 接続済みの socket.socket オブジェクト。
         """
         self.sock.bind(("127.0.0.1", port))
         self.sock.listen(1)
@@ -118,13 +130,19 @@ class FFmpegTCPSender:
             data = lines[-1]
 
 
-def run_with_tcp_pbar(path, pipeline):
+def run_with_tcp_pbar(
+    path: Union[str, os.PathLike], pipeline: ffmpeg.nodes.Node
+) -> Optional[tuple[Optional[bytes], Optional[bytes]]]:
     """
     FFmpeg の実行時に TCP 通信でプログレスバーを表示する。
 
-    :param path: 動画のファイルパス。
+    :param path: 動画のファイルパス。合計時間の取得に使用する。
     :param pipeline: FFmpeg の pipeline オブジェクト。
-    :return: pipeline.run() の結果。
+    :return: ``pipeline.run()`` の戻り値 (stdout, stderr) のタプル。
+        ``capture_stdout`` / ``capture_stderr`` を指定していないため、
+        成功時も要素はいずれも ``None`` になる。なお ``gevent.joinall`` は
+        例外を送出しないため、FFmpeg の実行が失敗した場合は戻り値自体が
+        ``None`` になる。
     """
     global PORT
 

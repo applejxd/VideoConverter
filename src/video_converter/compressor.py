@@ -1,3 +1,8 @@
+"""動画を圧縮するモジュール。
+
+ffmpeg の CRF (Constant Rate Factor) を指定して動画を再エンコードする。
+"""
+
 import os
 from pathlib import Path
 from typing import Optional

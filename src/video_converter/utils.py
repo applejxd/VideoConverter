@@ -1,3 +1,8 @@
+"""CLI 向けの補助ユーティリティ。
+
+変換関数が返す pipeline を実行し、進捗バーを表示するデコレータを提供する。
+"""
+
 from functools import wraps
 from typing import Any, Callable
 

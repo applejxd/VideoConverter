@@ -1,3 +1,5 @@
+"""動画から音声を抽出・除去するモジュール。"""
+
 import os
 from pathlib import Path
 

@@ -10,7 +10,6 @@ project = "video-converter"
 copyright = "2026, applejxd"
 author = "applejxd"
 release = "0.1.0"
-
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
@@ -27,7 +26,7 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns = []
 
-language = "en"
+language = "ja"
 
 autoclass_content = "both"  # __init__() も出力
 autodoc_typehints = "description"  # 型ヒントを有効化
@@ -46,6 +45,7 @@ apidoc_modules = [
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "sphinx_rtd_theme"
+html_title = f"{project} {release}"
 html_static_path = ["_static"]
 
 # # LuaLaTeXを使用
