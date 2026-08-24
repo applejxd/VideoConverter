@@ -61,19 +61,42 @@ class StdoutRedirector:
     def __init__(self, text_widget: tk.Text):
         self.text_widget = text_widget
 
-    def write(self, message: str) -> None:
+    def write(self, message: str) -> int:
         """メッセージをテキストウィジェットへ書き込む。
 
+        ウィジェットが既に破棄されている場合は何もしない。
+
         :param message: 書き込む文字列。
+        :return: 書き込んだ文字数。
         """
-        self.text_widget.insert(tk.END, message)
-        # テキストを最後にスクロール
-        self.text_widget.see(tk.END)
+        try:
+            self.text_widget.insert(tk.END, message)
+            # テキストを最後にスクロール
+            self.text_widget.see(tk.END)
+        except tk.TclError:
+            # ウィンドウが破棄された後の書き込みは無視する
+            return 0
+        return len(message)
 
     def flush(self) -> None:
         """``sys.stdout`` との互換性のために用意した何もしないメソッド。"""
         # flushメソッドを追加（sys.stdoutの互換性のため）
         pass
+
+    def isatty(self) -> bool:
+        """端末ではないことを示す。
+
+        :return: 常に ``False``。
+        """
+        return False
+
+    def fileno(self) -> int:
+        """ファイルディスクリプタを持たないことを示す。
+
+        :raises OSError: 常に送出する。``sys.stdout`` を期待する側が
+            ディスクリプタを要求した場合に、誤った値を返さないため。
+        """
+        raise OSError("StdoutRedirector はファイルディスクリプタを持ちません")
 
 
 class MyWindow:
@@ -219,7 +242,9 @@ class WindowBuilder:
     def create_console(self, height: int, width: int) -> tk.Text:
         """標準出力を表示するコンソールを生成する。
 
-        副作用として ``sys.stdout`` を :class:`StdoutRedirector` へ差し替える。
+        副作用として ``sys.stdout`` を :class:`StdoutRedirector` へ差し替え、
+        ウィンドウが破棄された時点で元の ``sys.stdout`` へ戻すハンドラを
+        登録する。
 
         :param height: コンソールの高さ (行数)。
         :param width: コンソールの幅 (文字数)。
@@ -227,8 +252,15 @@ class WindowBuilder:
         """
         console = tk.Text(self.window.root, wrap=tk.WORD, height=height, width=width)
 
-        stdout_redirector = StdoutRedirector(console)
-        sys.stdout = stdout_redirector
+        original_stdout = sys.stdout
+        sys.stdout = StdoutRedirector(console)
+
+        def restore_stdout() -> None:
+            """差し替えた ``sys.stdout`` を元に戻してウィンドウを破棄する。"""
+            sys.stdout = original_stdout
+            self.window.root.destroy()
+
+        self.window.root.protocol("WM_DELETE_WINDOW", restore_stdout)
 
         return console
 
