@@ -23,7 +23,6 @@ dependencies = [
     "tqdm",
     "tkinterdnd2",
     # libraries
-    "psutil",
     "gevent",
     "ffmpeg-python",
 ]

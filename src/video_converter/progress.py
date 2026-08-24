@@ -12,7 +12,6 @@ from typing import Callable, Optional, Union
 
 import ffmpeg
 import gevent
-import psutil
 import tqdm
 from gevent import monkey
 
@@ -25,28 +24,6 @@ DEFAULT_ACCEPT_TIMEOUT = 30.0
 # tqdm の監視スレッドは gevent が patch した threading と噛み合わず、
 # インタプリタ終了時に LoopExit を送出するため無効化する
 tqdm.tqdm.monitor_interval = 0
-
-
-def get_available_port(start: int = 49152) -> int:
-    """
-    使用可能なポート番号を取得する。
-
-    :param start: 検索を開始するポート番号 (デフォルト: 49152)。
-    :return: 使用可能なポート番号。
-    :raises RuntimeError: 使用可能なポート番号がない場合。
-    """
-    # "LISTEN" 状態のポート番号をリスト化
-    used_ports = {
-        conn.laddr.port for conn in psutil.net_connections() if conn.status == "LISTEN"
-    }
-    for port in range(start, 65535 + 1):
-        # 未使用のポート番号ならreturn
-        if port not in used_ports:
-            return port
-    raise RuntimeError("使用可能なポート番号がありません")
-
-
-PORT = get_available_port()
 
 
 # Model (Observer pattern)
@@ -74,7 +51,20 @@ class FFmpegTCPSender:
         self.timeout = timeout
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # ポート番号 0 を指定して OS に空きポートを割り当てさせる。
+        # 事前に空きを探して後から bind すると、その間に別プロセスへ
+        # 取られる余地がある
+        self.sock.bind(("127.0.0.1", 0))
+        self.sock.listen(1)
         self.connection: Optional[socket.socket] = None
+
+    @property
+    def port(self) -> int:
+        """待ち受けているポート番号。
+
+        :return: OS が割り当てたポート番号。
+        """
+        return self.sock.getsockname()[1]
 
     def close(self) -> None:
         """待ち受けソケットと接続済みソケットを閉じる。"""
@@ -87,25 +77,23 @@ class FFmpegTCPSender:
         """デストラクタ。ソケットを閉じる。"""
         self.close()
 
-    def _connect(self, port: int) -> socket.socket:
+    def _connect(self) -> socket.socket:
         """
-        TCP 接続を確立する。
+        FFmpeg からの TCP 接続を受け付ける。
 
-        :param port: ポート番号。
         :return: 接続済みの socket.socket オブジェクト。
         :raises TimeoutError: ``timeout`` 秒以内に FFmpeg が接続してこない場合。
             FFmpeg が起動直後に終了したときに待ち続けないためのガード。
         """
-        self.sock.bind(("127.0.0.1", port))
-        self.sock.listen(1)
         self.sock.settimeout(self.timeout)
         try:
             self.connection, _ = self.sock.accept()
         except socket.timeout as exc:
             raise TimeoutError(
                 f"FFmpeg が {self.timeout} 秒以内に "
-                f"127.0.0.1:{port} へ接続しませんでした"
+                f"127.0.0.1:{self.port} へ接続しませんでした"
             ) from exc
+        return self.connection
         return self.connection
 
     def _notify_pbar(self, key: str, value: str) -> None:
@@ -136,15 +124,14 @@ class FFmpegTCPSender:
                 self.pbar(time)  # コールバック関数を呼び出し
                 self.time_pre = time
 
-    def tcp_handler(self, port: int) -> None:
+    def tcp_handler(self) -> None:
         """
         TCP データの受信および処理を行う。
 
-        :param port: ポート番号。
         :raises TimeoutError: FFmpeg が制限時間内に接続してこない場合。
         """
         try:
-            connection = self._connect(port)
+            connection = self._connect()
             data = b""
             while True:
                 more_data = connection.recv(4096)
@@ -162,6 +149,56 @@ class FFmpegTCPSender:
             self.close()
 
 
+def probe_duration(path: Union[str, os.PathLike]) -> float:
+    """動画の合計再生時間を取得する。
+
+    :param path: 動画のファイルパス。
+    :return: 合計再生時間 (秒)。
+    """
+    return float(ffmpeg.probe(path)["format"]["duration"])
+
+
+def run_pipeline_with_observer(
+    pipeline: ffmpeg.nodes.Node,
+    observer: Union[tqdm.tqdm, Callable[[float], None]],
+    total: float,
+    timeout: float = DEFAULT_ACCEPT_TIMEOUT,
+) -> tuple[Optional[bytes], Optional[bytes]]:
+    """FFmpeg を実行し、進捗を Observer へ通知する。
+
+    :param pipeline: FFmpeg の pipeline オブジェクト。
+    :param observer: 進捗の通知先。tqdm プログレスバーまたはコールバック関数。
+    :param total: 動画の合計時間 (秒)。
+    :param timeout: FFmpeg からの接続を待つ秒数。
+    :return: ``pipeline.run()`` の戻り値 (stdout, stderr) のタプル。
+        ``capture_stdout`` / ``capture_stderr`` を指定していないため、
+        いずれの要素も ``None`` になる。
+    :raises ffmpeg.Error: FFmpeg が異常終了した場合。
+    :raises TimeoutError: FFmpeg が制限時間内に進捗用の TCP 接続を
+        行わなかった場合。
+    """
+    # 先に bind してから FFmpeg へポート番号を伝えるため、
+    # 取得したポートを他プロセスに奪われる余地がない
+    sender = FFmpegTCPSender(observer, total, timeout)
+    # TODO：AF_INET の TCP 通信以外にしたい
+    pipeline = pipeline.global_args("-progress", f"tcp://127.0.0.1:{sender.port}")
+
+    greenlet_progress = gevent.spawn(sender.tcp_handler)
+    greenlet_ffmpeg = gevent.spawn(pipeline.run)
+    # FFmpeg が接続前に失敗した場合、進捗側の待ち受けを直ちに打ち切る
+    greenlet_ffmpeg.link_exception(lambda _: greenlet_progress.kill(block=False))
+    gevent.joinall([greenlet_progress, greenlet_ffmpeg])
+
+    # gevent.joinall は greenlet の例外を送出しないため、明示的に確認する
+    if not greenlet_ffmpeg.successful():
+        greenlet_ffmpeg.get()
+    if not greenlet_progress.successful():
+        greenlet_progress.get()
+
+    # Return the result of pipeline.run()
+    return greenlet_ffmpeg.value
+
+
 def run_with_tcp_pbar(
     path: Union[str, os.PathLike], pipeline: ffmpeg.nodes.Node
 ) -> tuple[Optional[bytes], Optional[bytes]]:
@@ -177,24 +214,6 @@ def run_with_tcp_pbar(
     :raises TimeoutError: FFmpeg が制限時間内に進捗用の TCP 接続を
         行わなかった場合。
     """
-    # TODO：AF_INET の TCP 通信以外にしたい
-    pipeline = pipeline.global_args("-progress", f"tcp://127.0.0.1:{PORT}")
-
-    total = float(ffmpeg.probe(path)["format"]["duration"])
+    total = probe_duration(path)
     with tqdm.tqdm(total=total) as pbar:
-        sender = FFmpegTCPSender(pbar, total)
-
-        greenlet_progress = gevent.spawn(sender.tcp_handler, PORT)
-        greenlet_ffmpeg = gevent.spawn(pipeline.run)
-        # FFmpeg が接続前に失敗した場合、進捗側の待ち受けを直ちに打ち切る
-        greenlet_ffmpeg.link_exception(lambda _: greenlet_progress.kill(block=False))
-        gevent.joinall([greenlet_progress, greenlet_ffmpeg])
-
-        # gevent.joinall は greenlet の例外を送出しないため、明示的に確認する
-        if not greenlet_ffmpeg.successful():
-            greenlet_ffmpeg.get()
-        if not greenlet_progress.successful():
-            greenlet_progress.get()
-
-        # Return the result of pipeline.run()
-        return greenlet_ffmpeg.value
+        return run_pipeline_with_observer(pipeline, pbar, total)

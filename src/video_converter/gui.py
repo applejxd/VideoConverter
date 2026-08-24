@@ -12,15 +12,12 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 from typing import Optional
 
-import ffmpeg
-import gevent
 from tkinterdnd2 import DND_FILES, TkinterDnD
 
 from video_converter import progress
 from video_converter.compressor import compress
 from video_converter.converter import to_mp4
 from video_converter.extractor import audio_eliminate, audio_extract
-from video_converter.progress import FFmpegTCPSender
 
 #: ラジオボタンの選択値と変換関数の対応表
 METHODS = {
@@ -340,20 +337,16 @@ def convert_and_send(window: MyWindow, pbar_writer: TkPBarWriter) -> None:
     print(f"Method: {method_str}")
 
     # プログレスバー書き込み設定
-    total = float(ffmpeg.probe(path_str)["format"]["duration"])
+    total = progress.probe_duration(path_str)
     pbar_writer.reset(total)
-    sender = FFmpegTCPSender(
-        lambda step: pbar_writer.callback(step, window),
-        total,
-    )
-    greenlet_progress = gevent.spawn(sender.tcp_handler, progress.PORT)
 
     # FFmpeg 変換設定
     pipeline = METHODS[method_str](path_str)
-    pipeline = pipeline.global_args("-progress", f"tcp://127.0.0.1:{progress.PORT}")
-    greenlet_ffmpeg = gevent.spawn(lambda: pipeline.run())
-
-    gevent.joinall([greenlet_progress, greenlet_ffmpeg])
+    progress.run_pipeline_with_observer(
+        pipeline,
+        lambda step: pbar_writer.callback(step, window),
+        total,
+    )
 
 
 def open_window() -> None:
