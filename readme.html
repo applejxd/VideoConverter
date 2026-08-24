@@ -1,0 +1,245 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ja" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>README &mdash; video-converter 0.1.0</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=98e9f989"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=4755f45a"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="genindex.html" />
+    <link rel="search" title="検索" href="search.html" />
+    <link rel="next" title="使い方" href="usage.html" />
+    <link rel="prev" title="video-converter documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            video-converter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">目次</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">README</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-dependencies">Install dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-use">How to use</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-develop">How to develop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">使い方</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">アーキテクチャ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">video-converter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">README</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/readme.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="readme">
+<h1>README<a class="headerlink" href="#readme" title="Link to this heading"></a></h1>
+<p>Python CLI (Fire) and GUI (Tkinter) interface examples for ffmpeg-python.</p>
+<p>📖 <strong>`Documentation &lt;https://applejxd.github.io/VideoConverter/&gt;`_</strong></p>
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Command</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Default output</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">compress</span></code></p></td>
+<td><p>Re-encode a video with a given CRF</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_compressed.mp4</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">to_mp4</span></code></p></td>
+<td><p>Convert a video to <code class="docutils literal notranslate"><span class="pre">.mp4</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;.mp4</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">audio_extract</span></code></p></td>
+<td><p>Extract the audio track as <code class="docutils literal notranslate"><span class="pre">.mp3</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;.mp3</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">audio_eliminate</span></code></p></td>
+<td><p>Remove the audio track</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_wo_audio.mp4</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">gui</span></code></p></td>
+<td><p>Launch the Tkinter GUI</p></td>
+<td><p>–</p></td>
+</tr>
+</tbody>
+</table>
+<p>Both interfaces show conversion progress, which is read from FFmpeg through its
+<code class="docutils literal notranslate"><span class="pre">-progress</span></code> option over a local TCP connection (tqdm on the CLI, a progress bar
+widget in the GUI).</p>
+</section>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Python 3.12</p></li>
+<li><p>FFmpeg on your <code class="docutils literal notranslate"><span class="pre">PATH</span></code> (<code class="docutils literal notranslate"><span class="pre">ffmpeg-python</span></code> is only a wrapper and does not bundle it)</p></li>
+</ul>
+</section>
+<section id="install-dependencies">
+<h2>Install dependencies<a class="headerlink" href="#install-dependencies" title="Link to this heading"></a></h2>
+<p>For Windows 11:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="c"># Install command</span>
+<span class="n">winget</span> <span class="n">install</span> <span class="n">astral-sh</span><span class="p">.</span><span class="n">uv</span> <span class="n">Gyan</span><span class="p">.</span><span class="n">FFmpeg</span>
+
+<span class="c"># Install dependencies</span>
+<span class="n">uv</span> <span class="n">sync</span>
+
+<span class="c"># GUI executable creation (PyInstaller lives in the optional `build` extra)</span>
+<span class="n">uv</span> <span class="n">sync</span> <span class="p">-</span><span class="n">-extra</span> <span class="n">build</span>
+<span class="n">uv</span> <span class="n">run</span> <span class="n">pyinstaller</span> <span class="p">.\</span><span class="n">src</span><span class="p">\</span><span class="n">video_converter</span><span class="p">\</span><span class="n">gui</span><span class="p">.</span><span class="n">py</span> <span class="p">-</span><span class="n">-onefile</span> <span class="p">-</span><span class="n">-noconsole</span>
+</pre></div>
+</div>
+</section>
+<section id="how-to-use">
+<h2>How to use<a class="headerlink" href="#how-to-use" title="Link to this heading"></a></h2>
+<p>After installation the <code class="docutils literal notranslate"><span class="pre">video-converter</span></code> command is also available, so
+<code class="docutils literal notranslate"><span class="pre">video-converter</span> <span class="pre">gui</span></code> behaves the same as the module form below.</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="c"># Open GUI</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">video_converter</span> <span class="n">gui</span>
+
+<span class="c"># Compress video (lower crf means higher quality; defaults to 23)</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">video_converter</span> <span class="n">compress</span> <span class="n">input</span><span class="p">.</span><span class="n">mp4</span> <span class="p">-</span><span class="n">-crf</span> <span class="n">23</span>
+
+<span class="c"># Convert video to mp4</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">video_converter</span> <span class="n">to_mp4</span> <span class="n">input</span><span class="p">.</span><span class="n">mov</span>
+
+<span class="c"># Eliminate audio from video</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">video_converter</span> <span class="n">audio_eliminate</span> <span class="n">input</span><span class="p">.</span><span class="n">mp4</span>
+
+<span class="c"># Extract audio from video</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">video_converter</span> <span class="n">audio_extract</span> <span class="n">input</span><span class="p">.</span><span class="n">mp4</span>
+
+<span class="c"># Show available options</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">video_converter</span> <span class="p">-</span><span class="n">-help</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">output_path</span></code> is optional for every command. When omitted, the output is written
+next to the input file using the naming rules in the table above.</p>
+<p>An existing output file is overwritten without asking. If the resolved output
+would be the same file as the input (for example <code class="docutils literal notranslate"><span class="pre">to_mp4</span> <span class="pre">input.mp4</span></code> with no
+<code class="docutils literal notranslate"><span class="pre">output_path</span></code>), the command stops with a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> instead of destroying the
+input.</p>
+</section>
+<section id="how-to-develop">
+<h2>How to develop<a class="headerlink" href="#how-to-develop" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--dev
+pre-commit<span class="w"> </span>install
+
+<span class="c1"># optional</span>
+pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+</pre></div>
+</div>
+<p>Common tasks are available through the <code class="docutils literal notranslate"><span class="pre">Makefile</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>lint<span class="w">    </span><span class="c1"># ruff check + format check</span>
+make<span class="w"> </span><span class="nb">test</span><span class="w">    </span><span class="c1"># pytest</span>
+make<span class="w"> </span>html<span class="w">    </span><span class="c1"># build the Sphinx docs into docs/sphinx/build/html</span>
+make<span class="w"> </span>livehtml<span class="w">  </span><span class="c1"># auto-rebuild and serve the docs</span>
+make<span class="w"> </span>check<span class="w">   </span><span class="c1"># lint + test + html</span>
+</pre></div>
+</div>
+<p>The test suite downloads a small sample video into <code class="docutils literal notranslate"><span class="pre">tests/</span></code> on first run, and
+requires FFmpeg to be installed. <code class="docutils literal notranslate"><span class="pre">tests/test_gui.py</span></code> opens a real Tk window and
+is skipped automatically when no display or usable Tcl/Tk is available.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ruff</span></code> and <code class="docutils literal notranslate"><span class="pre">pytest</span></code> run in CI through the <code class="docutils literal notranslate"><span class="pre">ci</span></code> workflow on every push and pull
+request.</p>
+</section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h2>
+<p>The documentation is built with Sphinx from <code class="docutils literal notranslate"><span class="pre">docs/sphinx/</span></code> and published to
+GitHub Pages by the <code class="docutils literal notranslate"><span class="pre">docs</span></code> workflow on every push to <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="LICENSE">MIT</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="video-converter documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="usage.html" class="btn btn-neutral float-right" title="使い方" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, applejxd.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

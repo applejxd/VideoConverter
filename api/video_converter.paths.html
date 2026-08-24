@@ -1,0 +1,192 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ja" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>video_converter.paths module &mdash; video-converter 0.1.0</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=98e9f989"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/translations.js?v=4755f45a"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../genindex.html" />
+    <link rel="search" title="検索" href="../search.html" />
+    <link rel="next" title="video_converter.progress module" href="video_converter.progress.html" />
+    <link rel="prev" title="video_converter.gui module" href="video_converter.gui.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            video-converter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">目次</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">使い方</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">アーキテクチャ</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="video_converter.html">video_converter package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="video_converter.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="video_converter.compressor.html">video_converter.compressor module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.converter.html">video_converter.converter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.extractor.html">video_converter.extractor module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.gui.html">video_converter.gui module</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">video_converter.paths module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.progress.html">video_converter.progress module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.utils.html">video_converter.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.html#module-video_converter">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">video-converter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+          <li class="breadcrumb-item"><a href="video_converter.html">video_converter package</a></li>
+      <li class="breadcrumb-item active">video_converter.paths module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/video_converter.paths.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-video_converter.paths">
+<span id="video-converter-paths-module"></span><h1>video_converter.paths module<a class="headerlink" href="#module-video_converter.paths" title="Link to this heading"></a></h1>
+<p>入出力パスの解決を担うモジュール。</p>
+<p>各変換関数が共通で行う「入力の存在確認」「出力先の既定値の決定」
+「入力と出力が同一になっていないかの確認」をまとめる。</p>
+<p><code class="docutils literal notranslate"><span class="pre">progress</span></code> や <code class="docutils literal notranslate"><span class="pre">gevent</span></code> に依存しないため、パス解決のためだけに
+モジュールを import しても副作用が発生しない。</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="video_converter.paths._is_same_file">
+<span class="sig-prename descclassname"><span class="pre">video_converter.paths.</span></span><span class="sig-name descname"><span class="pre">_is_same_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/paths.html#_is_same_file"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.paths._is_same_file" title="Link to this definition"></a></dt>
+<dd><p>2 つのパスが同一のファイルを指すかどうかを判定する。</p>
+<p>出力先がまだ存在しない場合は <code class="docutils literal notranslate"><span class="pre">os.path.samefile</span></code> を使えないため、
+正規化した絶対パスを比較する。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_path</strong> (<em>Path</em>) -- 入力パス。</p></li>
+<li><p><strong>output_path</strong> (<em>Path</em>) -- 出力パス。</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値<span class="colon">:</span></dt>
+<dd class="field-even"><p>同一のファイルを指す場合は <code class="docutils literal notranslate"><span class="pre">True</span></code>。</p>
+</dd>
+<dt class="field-odd">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="video_converter.paths.resolve_io_paths">
+<span class="sig-prename descclassname"><span class="pre">video_converter.paths.</span></span><span class="sig-name descname"><span class="pre">resolve_io_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_stem_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/paths.html#resolve_io_paths"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.paths.resolve_io_paths" title="Link to this definition"></a></dt>
+<dd><p>入力パスを検証し、出力パスを確定する。</p>
+<p><code class="docutils literal notranslate"><span class="pre">output_path</span></code> が空文字の場合は、入力と同じディレクトリに
+<code class="docutils literal notranslate"><span class="pre">&lt;入力のファイル名&gt;&lt;default_stem_suffix&gt;&lt;default_suffix&gt;</span></code> を作る。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_path</strong> (<em>str</em><em> | </em><em>PathLike</em>) -- 入力する動画のファイルパス。</p></li>
+<li><p><strong>output_path</strong> (<em>str</em><em> | </em><em>PathLike</em>) -- 出力先のファイルパス。空文字の場合は既定値を用いる。</p></li>
+<li><p><strong>default_suffix</strong> (<em>str</em>) -- 既定の出力先に使う拡張子 (<code class="docutils literal notranslate"><span class="pre">&quot;.mp4&quot;</span></code> など)。</p></li>
+<li><p><strong>default_stem_suffix</strong> (<em>str</em>) -- 既定の出力先のファイル名に付ける接尾辞
+(<code class="docutils literal notranslate"><span class="pre">&quot;_compressed&quot;</span></code> など)。</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値<span class="colon">:</span></dt>
+<dd class="field-even"><p>(入力パス, 出力パス) のタプル。</p>
+</dd>
+<dt class="field-odd">例外<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> -- 入力パスがファイルとして存在しない場合。</p></li>
+<li><p><strong>ValueError</strong> -- 入力パスと出力パスが同一のファイルを指す場合。
+FFmpeg は同じファイルを読み書きできず、変換を実行すると入力を
+破壊するため、事前に停止する。</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[<em>Path</em>, <em>Path</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="video_converter.gui.html" class="btn btn-neutral float-left" title="video_converter.gui module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="video_converter.progress.html" class="btn btn-neutral float-right" title="video_converter.progress module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, applejxd.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

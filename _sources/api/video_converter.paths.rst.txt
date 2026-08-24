@@ -1,0 +1,7 @@
+video\_converter.paths module
+=============================
+
+.. automodule:: video_converter.paths
+   :members:
+   :show-inheritance:
+   :undoc-members:

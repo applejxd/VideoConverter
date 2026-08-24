@@ -1,0 +1,497 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ja" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>video_converter.gui module &mdash; video-converter 0.1.0</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=98e9f989"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/translations.js?v=4755f45a"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../genindex.html" />
+    <link rel="search" title="検索" href="../search.html" />
+    <link rel="next" title="video_converter.paths module" href="video_converter.paths.html" />
+    <link rel="prev" title="video_converter.extractor module" href="video_converter.extractor.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            video-converter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">目次</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">使い方</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">アーキテクチャ</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="video_converter.html">video_converter package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="video_converter.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="video_converter.compressor.html">video_converter.compressor module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.converter.html">video_converter.converter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.extractor.html">video_converter.extractor module</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">video_converter.gui module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.paths.html">video_converter.paths module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.progress.html">video_converter.progress module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.utils.html">video_converter.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.html#module-video_converter">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">video-converter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+          <li class="breadcrumb-item"><a href="video_converter.html">video_converter package</a></li>
+      <li class="breadcrumb-item active">video_converter.gui module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/video_converter.gui.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-video_converter.gui">
+<span id="video-converter-gui-module"></span><h1>video_converter.gui module<a class="headerlink" href="#module-video_converter.gui" title="Link to this heading"></a></h1>
+<p>Tkinter による GUI インターフェース。</p>
+<p>ウィンドウの構築は Builder パターン (<a class="reference internal" href="#video_converter.gui.WindowBuilder" title="video_converter.gui.WindowBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">WindowBuilder</span></code></a>) で行い、
+ウィジェットへの参照は <a class="reference internal" href="#video_converter.gui.MyWindow" title="video_converter.gui.MyWindow"><code class="xref py py-class docutils literal notranslate"><span class="pre">MyWindow</span></code></a> が保持する。変換の進捗は
+<a class="reference internal" href="video_converter.progress.html#video_converter.progress.FFmpegTCPSender" title="video_converter.progress.FFmpegTCPSender"><code class="xref py py-class docutils literal notranslate"><span class="pre">video_converter.progress.FFmpegTCPSender</span></code></a> から
+<a class="reference internal" href="#video_converter.gui.TkPBarWriter" title="video_converter.gui.TkPBarWriter"><code class="xref py py-class docutils literal notranslate"><span class="pre">TkPBarWriter</span></code></a> のコールバックへ通知される (Observer パターン)。</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="video_converter.gui.METHODS">
+<span class="sig-prename descclassname"><span class="pre">video_converter.gui.</span></span><span class="sig-name descname"><span class="pre">METHODS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'audio_eliminate':</span> <span class="pre">&lt;function</span> <span class="pre">audio_eliminate&gt;,</span> <span class="pre">'audio_extract':</span> <span class="pre">&lt;function</span> <span class="pre">audio_extract&gt;,</span> <span class="pre">'compress':</span> <span class="pre">&lt;function</span> <span class="pre">compress&gt;,</span> <span class="pre">'to_mp4':</span> <span class="pre">&lt;function</span> <span class="pre">to_mp4&gt;}</span></em><a class="headerlink" href="#video_converter.gui.METHODS" title="Link to this definition"></a></dt>
+<dd><p>ラジオボタンの選択値と変換関数の対応表</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="video_converter.gui.MyWindow">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">video_converter.gui.</span></span><span class="sig-name descname"><span class="pre">MyWindow</span></span><a class="reference internal" href="../_modules/video_converter/gui.html#MyWindow"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.MyWindow" title="Link to this definition"></a></dt>
+<dd><p>ベースクラス: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>GUI のウィジェットおよび状態変数への参照を保持するコンテナ。</p>
+<p>各属性は <a class="reference internal" href="#video_converter.gui.WindowBuilder" title="video_converter.gui.WindowBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">WindowBuilder</span></code></a> の <code class="docutils literal notranslate"><span class="pre">create_*</span></code> メソッドによって設定され、
+生成前は <code class="docutils literal notranslate"><span class="pre">None</span></code> である。</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="video_converter.gui.StdoutRedirector">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">video_converter.gui.</span></span><span class="sig-name descname"><span class="pre">StdoutRedirector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text_widget</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#StdoutRedirector"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.StdoutRedirector" title="Link to this definition"></a></dt>
+<dd><p>ベースクラス: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>標準出力を Tkinter のテキストウィジェットへ転送するクラス。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text_widget</strong> (<em>Text</em>) -- 出力先のテキストウィジェット。</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="video_converter.gui.StdoutRedirector.fileno">
+<span class="sig-name descname"><span class="pre">fileno</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#StdoutRedirector.fileno"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.StdoutRedirector.fileno" title="Link to this definition"></a></dt>
+<dd><p>ファイルディスクリプタを持たないことを示す。</p>
+<dl class="field-list simple">
+<dt class="field-odd">例外<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>OSError</strong> -- 常に送出する。<code class="docutils literal notranslate"><span class="pre">sys.stdout</span></code> を期待する側が
+ディスクリプタを要求した場合に、誤った値を返さないため。</p>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="video_converter.gui.StdoutRedirector.flush">
+<span class="sig-name descname"><span class="pre">flush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#StdoutRedirector.flush"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.StdoutRedirector.flush" title="Link to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">sys.stdout</span></code> との互換性のために用意した何もしないメソッド。</p>
+<dl class="field-list simple">
+<dt class="field-odd">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="video_converter.gui.StdoutRedirector.isatty">
+<span class="sig-name descname"><span class="pre">isatty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#StdoutRedirector.isatty"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.StdoutRedirector.isatty" title="Link to this definition"></a></dt>
+<dd><p>端末ではないことを示す。</p>
+<dl class="field-list simple">
+<dt class="field-odd">戻り値<span class="colon">:</span></dt>
+<dd class="field-odd"><p>常に <code class="docutils literal notranslate"><span class="pre">False</span></code>。</p>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="video_converter.gui.StdoutRedirector.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#StdoutRedirector.write"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.StdoutRedirector.write" title="Link to this definition"></a></dt>
+<dd><p>メッセージをテキストウィジェットへ書き込む。</p>
+<p>ウィジェットが既に破棄されている場合は何もしない。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>message</strong> (<em>str</em>) -- 書き込む文字列。</p>
+</dd>
+<dt class="field-even">戻り値<span class="colon">:</span></dt>
+<dd class="field-even"><p>書き込んだ文字数。</p>
+</dd>
+<dt class="field-odd">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="video_converter.gui.TkPBarWriter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">video_converter.gui.</span></span><span class="sig-name descname"><span class="pre">TkPBarWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#TkPBarWriter"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.TkPBarWriter" title="Link to this definition"></a></dt>
+<dd><p>ベースクラス: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>進捗の通知を受けて GUI のプログレスバーを更新するクラス (Observer)。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>total</strong> (<em>float</em><em> | </em><em>None</em>) -- 動画の合計時間 (秒)。生成時点では不明なため既定は <code class="docutils literal notranslate"><span class="pre">None</span></code>
+で、変換開始時に <a class="reference internal" href="#video_converter.gui.convert_and_send" title="video_converter.gui.convert_and_send"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert_and_send()</span></code></a> が <a class="reference internal" href="#video_converter.gui.TkPBarWriter.reset" title="video_converter.gui.TkPBarWriter.reset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reset()</span></code></a> を通じて
+設定する。</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="video_converter.gui.TkPBarWriter.callback">
+<span class="sig-name descname"><span class="pre">callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#TkPBarWriter.callback"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.TkPBarWriter.callback" title="Link to this definition"></a></dt>
+<dd><p>進捗をウィジェットへ反映する。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>step</strong> (<em>float</em>) -- 変換済みの再生時間 (秒)。</p></li>
+<li><p><strong>window</strong> (<a class="reference internal" href="#video_converter.gui.MyWindow" title="video_converter.gui.MyWindow"><em>MyWindow</em></a>) -- 更新対象のウィジェットを保持するウィンドウ。</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="video_converter.gui.TkPBarWriter.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#TkPBarWriter.reset"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.TkPBarWriter.reset" title="Link to this definition"></a></dt>
+<dd><p>変換の開始に合わせて合計時間と計測開始時刻を初期化する。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>total</strong> (<em>float</em>) -- 動画の合計時間 (秒)。</p>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="video_converter.gui.WindowBuilder">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">video_converter.gui.</span></span><span class="sig-name descname"><span class="pre">WindowBuilder</span></span><a class="reference internal" href="../_modules/video_converter/gui.html#WindowBuilder"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.WindowBuilder" title="Link to this definition"></a></dt>
+<dd><p>ベースクラス: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p><a class="reference internal" href="#video_converter.gui.MyWindow" title="video_converter.gui.MyWindow"><code class="xref py py-class docutils literal notranslate"><span class="pre">MyWindow</span></code></a> を組み立てる Builder。</p>
+<p><code class="docutils literal notranslate"><span class="pre">create_*</span></code> メソッドはウィジェットを生成して返すと同時に、状態変数を
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">window</span></code> へ登録する。配置 (grid) は呼び出し側の責務とする。</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="video_converter.gui.WindowBuilder.create_browse_button">
+<span class="sig-name descname"><span class="pre">create_browse_button</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#WindowBuilder.create_browse_button"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.WindowBuilder.create_browse_button" title="Link to this definition"></a></dt>
+<dd><p>ファイル選択ダイアログを開くボタンを生成する。</p>
+<dl class="field-list simple">
+<dt class="field-odd">戻り値<span class="colon">:</span></dt>
+<dd class="field-odd"><p>「ファイルを選択」ボタン。</p>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Button</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="video_converter.gui.WindowBuilder.create_console">
+<span class="sig-name descname"><span class="pre">create_console</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#WindowBuilder.create_console"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.WindowBuilder.create_console" title="Link to this definition"></a></dt>
+<dd><p>標準出力を表示するコンソールを生成する。</p>
+<p>副作用として <code class="docutils literal notranslate"><span class="pre">sys.stdout</span></code> を <a class="reference internal" href="#video_converter.gui.StdoutRedirector" title="video_converter.gui.StdoutRedirector"><code class="xref py py-class docutils literal notranslate"><span class="pre">StdoutRedirector</span></code></a> へ差し替え、
+ルートウィンドウが破棄された時点で元の <code class="docutils literal notranslate"><span class="pre">sys.stdout</span></code> へ戻す
+ハンドラを登録する。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>height</strong> (<em>int</em>) -- コンソールの高さ (行数)。</p></li>
+<li><p><strong>width</strong> (<em>int</em>) -- コンソールの幅 (文字数)。</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値<span class="colon">:</span></dt>
+<dd class="field-even"><p>コンソールとして使うテキストウィジェット。</p>
+</dd>
+<dt class="field-odd">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Text</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="video_converter.gui.WindowBuilder.create_convert_button">
+<span class="sig-name descname"><span class="pre">create_convert_button</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">writer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#WindowBuilder.create_convert_button"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.WindowBuilder.create_convert_button" title="Link to this definition"></a></dt>
+<dd><p>変換を開始するボタンを生成する。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>writer</strong> (<a class="reference internal" href="#video_converter.gui.TkPBarWriter" title="video_converter.gui.TkPBarWriter"><em>TkPBarWriter</em></a>) -- 進捗をウィジェットへ反映するライター。</p>
+</dd>
+<dt class="field-even">戻り値<span class="colon">:</span></dt>
+<dd class="field-even"><p>「変換」ボタン。</p>
+</dd>
+<dt class="field-odd">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Button</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="video_converter.gui.WindowBuilder.create_method_options">
+<span class="sig-name descname"><span class="pre">create_method_options</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#WindowBuilder.create_method_options"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.WindowBuilder.create_method_options" title="Link to this definition"></a></dt>
+<dd><p>変換方式を選択するラジオボタン群を生成する。</p>
+<p>選択値は <a class="reference internal" href="#video_converter.gui.METHODS" title="video_converter.gui.METHODS"><code class="xref py py-data docutils literal notranslate"><span class="pre">METHODS</span></code></a> のキー (<code class="docutils literal notranslate"><span class="pre">to_mp4</span></code>、<code class="docutils literal notranslate"><span class="pre">audio_extract</span></code>、
+<code class="docutils literal notranslate"><span class="pre">audio_eliminate</span></code>、<code class="docutils literal notranslate"><span class="pre">compress</span></code>) に対応する。</p>
+<dl class="field-list simple">
+<dt class="field-odd">戻り値<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ラジオボタンのリスト。</p>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[<em>Radiobutton</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="video_converter.gui.WindowBuilder.create_path_entry">
+<span class="sig-name descname"><span class="pre">create_path_entry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#WindowBuilder.create_path_entry"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.WindowBuilder.create_path_entry" title="Link to this definition"></a></dt>
+<dd><p>ファイルパス入力欄を生成する。</p>
+<p>入力欄自体をドロップ対象として登録する。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>width</strong> (<em>int</em>) -- 入力欄の幅 (文字数)。</p>
+</dd>
+<dt class="field-even">戻り値<span class="colon">:</span></dt>
+<dd class="field-even"><p>ファイルパス入力欄。</p>
+</dd>
+<dt class="field-odd">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Entry</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="video_converter.gui.WindowBuilder.create_pbar_items">
+<span class="sig-name descname"><span class="pre">create_pbar_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pbar_length</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#WindowBuilder.create_pbar_items"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.WindowBuilder.create_pbar_items" title="Link to this definition"></a></dt>
+<dd><p>進捗率ラベル・プログレスバー・残り時間ラベルを生成する。</p>
+<p>プログレスバーは進捗を 0.0〜1.0 の割合で受け取る。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pbar_length</strong> (<em>int</em>) -- プログレスバーの長さ (ピクセル)。</p>
+</dd>
+<dt class="field-even">戻り値<span class="colon">:</span></dt>
+<dd class="field-even"><p>(進捗率ラベル, プログレスバー, 残り時間ラベル) のタプル。</p>
+</dd>
+<dt class="field-odd">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[<em>Label</em>, <em>Progressbar</em>, <em>Label</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="video_converter.gui.WindowBuilder.create_window">
+<span class="sig-name descname"><span class="pre">create_window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geometry</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#WindowBuilder.create_window"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.WindowBuilder.create_window" title="Link to this definition"></a></dt>
+<dd><p>ルートウィンドウを生成する。</p>
+<p>ドラッグ&amp;ドロップを利用するため、<code class="docutils literal notranslate"><span class="pre">tk.Tk</span></code> ではなく
+<code class="docutils literal notranslate"><span class="pre">TkinterDnD.Tk</span></code> を使用する。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>geometry</strong> (<em>str</em>) -- <code class="docutils literal notranslate"><span class="pre">&quot;510x420&quot;</span></code> 形式のウィンドウサイズ。</p>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="video_converter.gui._browse_file">
+<span class="sig-prename descclassname"><span class="pre">video_converter.gui.</span></span><span class="sig-name descname"><span class="pre">_browse_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string_var</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#_browse_file"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui._browse_file" title="Link to this definition"></a></dt>
+<dd><p>ファイル選択ダイアログを開き、選択されたパスを変数へ設定する。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>string_var</strong> (<em>StringVar</em>) -- 選択されたファイルパスの格納先。</p>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="video_converter.gui._convert">
+<span class="sig-prename descclassname"><span class="pre">video_converter.gui.</span></span><span class="sig-name descname"><span class="pre">_convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pbar_writer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#_convert"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui._convert" title="Link to this definition"></a></dt>
+<dd><p>GUI の入力内容にもとづき変換を実行する (例外はそのまま送出する)。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>window</strong> (<a class="reference internal" href="#video_converter.gui.MyWindow" title="video_converter.gui.MyWindow"><em>MyWindow</em></a>) -- 入力値と進捗ウィジェットを保持するウィンドウ。</p></li>
+<li><p><strong>pbar_writer</strong> (<a class="reference internal" href="#video_converter.gui.TkPBarWriter" title="video_converter.gui.TkPBarWriter"><em>TkPBarWriter</em></a>) -- 進捗をウィジェットへ反映するライター。</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="video_converter.gui._drop_file">
+<span class="sig-prename descclassname"><span class="pre">video_converter.gui.</span></span><span class="sig-name descname"><span class="pre">_drop_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string_var</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#_drop_file"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui._drop_file" title="Link to this definition"></a></dt>
+<dd><p>ドラッグ&amp;ドロップされたファイルパスを変数へ設定する。</p>
+<p>tkinterdnd2 は Windows 形式のパスを <code class="docutils literal notranslate"><span class="pre">{C:/path/to/file.mp4}</span></code> のように
+波括弧で囲んで渡すため、それを取り除いてから格納する。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<em>Event</em>) -- <code class="docutils literal notranslate"><span class="pre">&lt;&lt;Drop&gt;&gt;</span></code> イベント。<code class="docutils literal notranslate"><span class="pre">data</span></code> にファイルパスを含む。</p></li>
+<li><p><strong>string_var</strong> (<em>StringVar</em>) -- ドロップされたファイルパスの格納先。</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="video_converter.gui.convert_and_send">
+<span class="sig-prename descclassname"><span class="pre">video_converter.gui.</span></span><span class="sig-name descname"><span class="pre">convert_and_send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pbar_writer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#convert_and_send"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.convert_and_send" title="Link to this definition"></a></dt>
+<dd><p>GUI の入力内容にもとづき変換を実行する。</p>
+<p>FFmpeg の実行と進捗受信を gevent の greenlet で並行に動かし、
+両者の完了を待ち合わせる。</p>
+<p>変換に失敗した場合、例外はそのままでは Tk が <code class="docutils literal notranslate"><span class="pre">sys.stderr</span></code> へ出力して
+しまい、コンソール領域 (<code class="docutils literal notranslate"><span class="pre">sys.stdout</span></code> を転送) にも表示されない。
+<code class="docutils literal notranslate"><span class="pre">--noconsole</span></code> でビルドした実行ファイルでは何も見えなくなるため、
+ここで捕捉してダイアログとコンソールの両方へ表示する。</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>window</strong> (<a class="reference internal" href="#video_converter.gui.MyWindow" title="video_converter.gui.MyWindow"><em>MyWindow</em></a>) -- 入力値と進捗ウィジェットを保持するウィンドウ。</p></li>
+<li><p><strong>pbar_writer</strong> (<a class="reference internal" href="#video_converter.gui.TkPBarWriter" title="video_converter.gui.TkPBarWriter"><em>TkPBarWriter</em></a>) -- 進捗をウィジェットへ反映するライター。</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="video_converter.gui.create_window">
+<span class="sig-prename descclassname"><span class="pre">video_converter.gui.</span></span><span class="sig-name descname"><span class="pre">create_window</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#create_window"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.create_window" title="Link to this definition"></a></dt>
+<dd><p>全ウィジェットを生成・配置したウィンドウを構築する。</p>
+<p><code class="docutils literal notranslate"><span class="pre">mainloop()</span></code> は呼び出さないため、テストから利用できる。</p>
+<dl class="field-list simple">
+<dt class="field-odd">戻り値<span class="colon">:</span></dt>
+<dd class="field-odd"><p>構築済みのウィンドウ。</p>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#video_converter.gui.MyWindow" title="video_converter.gui.MyWindow"><em>MyWindow</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="video_converter.gui.open_window">
+<span class="sig-prename descclassname"><span class="pre">video_converter.gui.</span></span><span class="sig-name descname"><span class="pre">open_window</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/gui.html#open_window"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.gui.open_window" title="Link to this definition"></a></dt>
+<dd><p>ウィンドウを構築し、イベントループを開始する。</p>
+<dl class="field-list simple">
+<dt class="field-odd">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="video_converter.extractor.html" class="btn btn-neutral float-left" title="video_converter.extractor module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="video_converter.paths.html" class="btn btn-neutral float-right" title="video_converter.paths module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, applejxd.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

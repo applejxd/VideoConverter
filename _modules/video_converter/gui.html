@@ -1,0 +1,591 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ja" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>video_converter.gui &mdash; video-converter 0.1.0</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=98e9f989"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/translations.js?v=4755f45a"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="検索" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            video-converter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">目次</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">使い方</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../architecture.html">アーキテクチャ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">video-converter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">モジュールコード</a></li>
+      <li class="breadcrumb-item active">video_converter.gui</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>video_converter.gui のソースコード</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Tkinter による GUI インターフェース。</span>
+
+<span class="sd">ウィンドウの構築は Builder パターン (:class:`WindowBuilder`) で行い、</span>
+<span class="sd">ウィジェットへの参照は :class:`MyWindow` が保持する。変換の進捗は</span>
+<span class="sd">:class:`video_converter.progress.FFmpegTCPSender` から</span>
+<span class="sd">:class:`TkPBarWriter` のコールバックへ通知される (Observer パターン)。</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tkinter</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tk</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tkinter</span><span class="w"> </span><span class="kn">import</span> <span class="n">filedialog</span><span class="p">,</span> <span class="n">messagebox</span><span class="p">,</span> <span class="n">ttk</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">tkinterdnd2</span><span class="w"> </span><span class="kn">import</span> <span class="n">DND_FILES</span><span class="p">,</span> <span class="n">TkinterDnD</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">video_converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">progress</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">video_converter.compressor</span><span class="w"> </span><span class="kn">import</span> <span class="n">compress</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">video_converter.converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_mp4</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">video_converter.extractor</span><span class="w"> </span><span class="kn">import</span> <span class="n">audio_eliminate</span><span class="p">,</span> <span class="n">audio_extract</span>
+
+<span class="c1">#: ラジオボタンの選択値と変換関数の対応表</span>
+<span class="n">METHODS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;to_mp4&quot;</span><span class="p">:</span> <span class="n">to_mp4</span><span class="p">,</span>
+    <span class="s2">&quot;audio_extract&quot;</span><span class="p">:</span> <span class="n">audio_extract</span><span class="p">,</span>
+    <span class="s2">&quot;audio_eliminate&quot;</span><span class="p">:</span> <span class="n">audio_eliminate</span><span class="p">,</span>
+    <span class="s2">&quot;compress&quot;</span><span class="p">:</span> <span class="n">compress</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="_browse_file">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui._browse_file">[ドキュメント]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_browse_file</span><span class="p">(</span><span class="n">string_var</span><span class="p">:</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ファイル選択ダイアログを開き、選択されたパスを変数へ設定する。</span>
+
+<span class="sd">    :param string_var: 選択されたファイルパスの格納先。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">filedialog</span><span class="o">.</span><span class="n">askopenfilename</span><span class="p">()</span>
+    <span class="n">string_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_drop_file">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui._drop_file">[ドキュメント]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_drop_file</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="s2">&quot;tk.Event&quot;</span><span class="p">,</span> <span class="n">string_var</span><span class="p">:</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ドラッグ&amp;ドロップされたファイルパスを変数へ設定する。</span>
+
+<span class="sd">    tkinterdnd2 は Windows 形式のパスを ``{C:/path/to/file.mp4}`` のように</span>
+<span class="sd">    波括弧で囲んで渡すため、それを取り除いてから格納する。</span>
+
+<span class="sd">    :param event: ``&lt;&lt;Drop&gt;&gt;`` イベント。``data`` にファイルパスを含む。</span>
+<span class="sd">    :param string_var: ドロップされたファイルパスの格納先。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># ドロップされたファイルパスを取得</span>
+    <span class="c1"># Windows形式のパス（{C:/path/to/file.mp4}）から通常のパスに変換</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">string_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ファイルがドロップされました: </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="StdoutRedirector">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.StdoutRedirector">[ドキュメント]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StdoutRedirector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;標準出力を Tkinter のテキストウィジェットへ転送するクラス。</span>
+
+<span class="sd">    :param text_widget: 出力先のテキストウィジェット。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text_widget</span><span class="p">:</span> <span class="n">tk</span><span class="o">.</span><span class="n">Text</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_widget</span> <span class="o">=</span> <span class="n">text_widget</span>
+
+<div class="viewcode-block" id="StdoutRedirector.write">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.StdoutRedirector.write">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;メッセージをテキストウィジェットへ書き込む。</span>
+
+<span class="sd">        ウィジェットが既に破棄されている場合は何もしない。</span>
+
+<span class="sd">        :param message: 書き込む文字列。</span>
+<span class="sd">        :return: 書き込んだ文字数。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">text_widget</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">tk</span><span class="o">.</span><span class="n">END</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+            <span class="c1"># テキストを最後にスクロール</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">text_widget</span><span class="o">.</span><span class="n">see</span><span class="p">(</span><span class="n">tk</span><span class="o">.</span><span class="n">END</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">tk</span><span class="o">.</span><span class="n">TclError</span><span class="p">:</span>
+            <span class="c1"># ウィンドウが破棄された後の書き込みは無視する</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StdoutRedirector.flush">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.StdoutRedirector.flush">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;``sys.stdout`` との互換性のために用意した何もしないメソッド。&quot;&quot;&quot;</span>
+        <span class="c1"># flushメソッドを追加（sys.stdoutの互換性のため）</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="StdoutRedirector.isatty">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.StdoutRedirector.isatty">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">isatty</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;端末ではないことを示す。</span>
+
+<span class="sd">        :return: 常に ``False``。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="StdoutRedirector.fileno">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.StdoutRedirector.fileno">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fileno</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ファイルディスクリプタを持たないことを示す。</span>
+
+<span class="sd">        :raises OSError: 常に送出する。``sys.stdout`` を期待する側が</span>
+<span class="sd">            ディスクリプタを要求した場合に、誤った値を返さないため。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="s2">&quot;StdoutRedirector はファイルディスクリプタを持ちません&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MyWindow">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.MyWindow">[ドキュメント]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyWindow</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GUI のウィジェットおよび状態変数への参照を保持するコンテナ。</span>
+
+<span class="sd">    各属性は :class:`WindowBuilder` の ``create_*`` メソッドによって設定され、</span>
+<span class="sd">    生成前は ``None`` である。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># ウィンドウ</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">:</span> <span class="n">tk</span><span class="o">.</span><span class="n">Tk</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># ファイルパス</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entry_var</span><span class="p">:</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># 変換メソッドの種類</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_method</span><span class="p">:</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># プログレスバー</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">percent</span><span class="p">:</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pb</span><span class="p">:</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Progressbar</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remain</span><span class="p">:</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="WindowBuilder">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.WindowBuilder">[ドキュメント]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">WindowBuilder</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`MyWindow` を組み立てる Builder。</span>
+
+<span class="sd">    ``create_*`` メソッドはウィジェットを生成して返すと同時に、状態変数を</span>
+<span class="sd">    :attr:`window` へ登録する。配置 (grid) は呼び出し側の責務とする。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># ウィンドウ</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window</span> <span class="o">=</span> <span class="n">MyWindow</span><span class="p">()</span>
+
+<div class="viewcode-block" id="WindowBuilder.create_window">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.WindowBuilder.create_window">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geometry</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ルートウィンドウを生成する。</span>
+
+<span class="sd">        ドラッグ&amp;ドロップを利用するため、``tk.Tk`` ではなく</span>
+<span class="sd">        ``TkinterDnD.Tk`` を使用する。</span>
+
+<span class="sd">        :param geometry: ``&quot;510x420&quot;`` 形式のウィンドウサイズ。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TkinterDnDを使用してドラッグアンドドロップをサポートするウィンドウを作成</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">TkinterDnD</span><span class="o">.</span><span class="n">Tk</span><span class="p">()</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">geometry</span><span class="p">(</span><span class="n">geometry</span><span class="p">)</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;VideoConverter&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">root</span></div>
+
+
+<div class="viewcode-block" id="WindowBuilder.create_browse_button">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.WindowBuilder.create_browse_button">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_browse_button</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ファイル選択ダイアログを開くボタンを生成する。</span>
+
+<span class="sd">        :return: 「ファイルを選択」ボタン。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">browse_button</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">root</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="s2">&quot;ファイルを選択&quot;</span><span class="p">,</span>
+            <span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_browse_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">entry_var</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">browse_button</span></div>
+
+
+<div class="viewcode-block" id="WindowBuilder.create_path_entry">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.WindowBuilder.create_path_entry">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_path_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tk</span><span class="o">.</span><span class="n">Entry</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ファイルパス入力欄を生成する。</span>
+
+<span class="sd">        入力欄自体をドロップ対象として登録する。</span>
+
+<span class="sd">        :param width: 入力欄の幅 (文字数)。</span>
+<span class="sd">        :return: ファイルパス入力欄。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">entry_var</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span><span class="p">()</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Entry</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">entry_var</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span>
+        <span class="p">)</span>
+        <span class="c1"># エントリーウィジェットにドラッグアンドドロップを設定</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">drop_target_register</span><span class="p">(</span><span class="n">DND_FILES</span><span class="p">)</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">dnd_bind</span><span class="p">(</span><span class="s2">&quot;&lt;&lt;Drop&gt;&gt;&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="n">_drop_file</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">entry_var</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">entry</span></div>
+
+
+<div class="viewcode-block" id="WindowBuilder.create_convert_button">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.WindowBuilder.create_convert_button">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_convert_button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">writer</span><span class="p">:</span> <span class="s2">&quot;TkPBarWriter&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;変換を開始するボタンを生成する。</span>
+
+<span class="sd">        :param writer: 進捗をウィジェットへ反映するライター。</span>
+<span class="sd">        :return: 「変換」ボタン。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">button</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">root</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="s2">&quot;変換&quot;</span><span class="p">,</span>
+            <span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">convert_and_send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">,</span> <span class="n">writer</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">button</span></div>
+
+
+<div class="viewcode-block" id="WindowBuilder.create_method_options">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.WindowBuilder.create_method_options">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_method_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">tk</span><span class="o">.</span><span class="n">Radiobutton</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;変換方式を選択するラジオボタン群を生成する。</span>
+
+<span class="sd">        選択値は :data:`METHODS` のキー (``to_mp4``、``audio_extract``、</span>
+<span class="sd">        ``audio_eliminate``、``compress``) に対応する。</span>
+
+<span class="sd">        :return: ラジオボタンのリスト。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;MP4 へ変換&quot;</span><span class="p">,</span> <span class="s2">&quot;MP3 へ変換&quot;</span><span class="p">,</span> <span class="s2">&quot;音声除去&quot;</span><span class="p">,</span> <span class="s2">&quot;動画圧縮&quot;</span><span class="p">]</span>
+        <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;to_mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;audio_extract&quot;</span><span class="p">,</span> <span class="s2">&quot;audio_eliminate&quot;</span><span class="p">,</span> <span class="s2">&quot;compress&quot;</span><span class="p">]</span>
+
+        <span class="c1"># 選択された値を格納する変数を作成</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">selected_method</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">selected_method</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;to_mp4&quot;</span><span class="p">)</span>
+
+        <span class="c1"># ラジオボタンを作成</span>
+        <span class="n">radio_buttons</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">tk</span><span class="o">.</span><span class="n">Radiobutton</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">root</span><span class="p">,</span>
+                <span class="n">variable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">selected_method</span><span class="p">,</span>
+                <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">text</span><span class="p">,</span> <span class="n">method</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">methods</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">radio_buttons</span></div>
+
+
+<div class="viewcode-block" id="WindowBuilder.create_pbar_items">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.WindowBuilder.create_pbar_items">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_pbar_items</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">pbar_length</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">,</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Progressbar</span><span class="p">,</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;進捗率ラベル・プログレスバー・残り時間ラベルを生成する。</span>
+
+<span class="sd">        プログレスバーは進捗を 0.0〜1.0 の割合で受け取る。</span>
+
+<span class="sd">        :param pbar_length: プログレスバーの長さ (ピクセル)。</span>
+<span class="sd">        :return: (進捗率ラベル, プログレスバー, 残り時間ラベル) のタプル。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">percent</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">percent</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;  0%&quot;</span><span class="p">)</span>
+        <span class="n">percent</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">percent</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">pb</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Progressbar</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">pbar_length</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;determinate&quot;</span><span class="p">,</span> <span class="n">maximum</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">remain</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">StringVar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">remain</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;[00:00&lt;00:00] 0.0s/it&quot;</span><span class="p">)</span>
+        <span class="n">remain</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">remain</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">percent</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">pb</span><span class="p">,</span> <span class="n">remain</span></div>
+
+
+<div class="viewcode-block" id="WindowBuilder.create_console">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.WindowBuilder.create_console">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_console</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tk</span><span class="o">.</span><span class="n">Text</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;標準出力を表示するコンソールを生成する。</span>
+
+<span class="sd">        副作用として ``sys.stdout`` を :class:`StdoutRedirector` へ差し替え、</span>
+<span class="sd">        ルートウィンドウが破棄された時点で元の ``sys.stdout`` へ戻す</span>
+<span class="sd">        ハンドラを登録する。</span>
+
+<span class="sd">        :param height: コンソールの高さ (行数)。</span>
+<span class="sd">        :param width: コンソールの幅 (文字数)。</span>
+<span class="sd">        :return: コンソールとして使うテキストウィジェット。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">console</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">wrap</span><span class="o">=</span><span class="n">tk</span><span class="o">.</span><span class="n">WORD</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">)</span>
+
+        <span class="n">original_stdout</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">StdoutRedirector</span><span class="p">(</span><span class="n">console</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">root</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">restore_stdout</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="s2">&quot;tk.Event&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;ルートウィンドウの破棄時に ``sys.stdout`` を元へ戻す。</span>
+
+<span class="sd">            :param event: ``&lt;Destroy&gt;`` イベント。子ウィジェットの破棄でも</span>
+<span class="sd">                発火するため、ルート自身かどうかを確認する。</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">widget</span> <span class="ow">is</span> <span class="n">root</span><span class="p">:</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">original_stdout</span>
+
+        <span class="c1"># WM_DELETE_WINDOW は「閉じるボタン」経由でしか発火しないため、</span>
+        <span class="c1"># destroy() を直接呼ばれた場合にも対応できる &lt;Destroy&gt; を使う</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s2">&quot;&lt;Destroy&gt;&quot;</span><span class="p">,</span> <span class="n">restore_stdout</span><span class="p">,</span> <span class="n">add</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">console</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TkPBarWriter">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.TkPBarWriter">[ドキュメント]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TkPBarWriter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;進捗の通知を受けて GUI のプログレスバーを更新するクラス (Observer)。</span>
+
+<span class="sd">    :param total: 動画の合計時間 (秒)。生成時点では不明なため既定は ``None``</span>
+<span class="sd">        で、変換開始時に :func:`convert_and_send` が :meth:`reset` を通じて</span>
+<span class="sd">        設定する。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="o">=</span> <span class="n">total</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<div class="viewcode-block" id="TkPBarWriter.reset">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.TkPBarWriter.reset">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;変換の開始に合わせて合計時間と計測開始時刻を初期化する。</span>
+
+<span class="sd">        :param total: 動画の合計時間 (秒)。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="o">=</span> <span class="n">total</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="TkPBarWriter.callback">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.TkPBarWriter.callback">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="n">MyWindow</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;進捗をウィジェットへ反映する。</span>
+
+<span class="sd">        :param step: 変換済みの再生時間 (秒)。</span>
+<span class="sd">        :param window: 更新対象のウィジェットを保持するウィンドウ。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">window</span><span class="o">.</span><span class="n">pb</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">step</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">total</span><span class="p">)</span>
+        <span class="n">window</span><span class="o">.</span><span class="n">pb</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span>
+        <span class="n">mean_speed</span> <span class="o">=</span> <span class="n">dt</span> <span class="o">/</span> <span class="n">step</span> <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">remain_time</span> <span class="o">=</span> <span class="n">mean_speed</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="o">-</span> <span class="n">step</span><span class="p">)</span> <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+
+        <span class="n">dt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">:</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="nb">divmod</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">dt</span><span class="p">),</span> <span class="mi">60</span><span class="p">))</span>
+        <span class="n">remain_time</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">:</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="nb">divmod</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">remain_time</span><span class="p">),</span> <span class="mi">60</span><span class="p">))</span>
+
+        <span class="c1"># StringVarを使用して値を更新</span>
+        <span class="n">window</span><span class="o">.</span><span class="n">percent</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">total</span><span class="p">)</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+        <span class="n">window</span><span class="o">.</span><span class="n">remain</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">dt</span><span class="si">}</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">remain_time</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">mean_speed</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s/it&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="create_window">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.create_window">[ドキュメント]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_window</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">MyWindow</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;全ウィジェットを生成・配置したウィンドウを構築する。</span>
+
+<span class="sd">    ``mainloop()`` は呼び出さないため、テストから利用できる。</span>
+
+<span class="sd">    :return: 構築済みのウィンドウ。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">builder</span> <span class="o">=</span> <span class="n">WindowBuilder</span><span class="p">()</span>
+    <span class="n">builder</span><span class="o">.</span><span class="n">create_window</span><span class="p">(</span><span class="n">geometry</span><span class="o">=</span><span class="s2">&quot;510x420&quot;</span><span class="p">)</span>
+
+    <span class="c1"># ウィンドウ全体にもドラッグアンドドロップを設定</span>
+    <span class="n">builder</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">drop_target_register</span><span class="p">(</span><span class="n">DND_FILES</span><span class="p">)</span>
+    <span class="n">builder</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">dnd_bind</span><span class="p">(</span>
+        <span class="s2">&quot;&lt;&lt;Drop&gt;&gt;&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="n">_drop_file</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">builder</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">entry_var</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># ファイルパス選択</span>
+    <span class="n">browse_button</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">create_browse_button</span><span class="p">()</span>
+    <span class="n">path_entry</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">create_path_entry</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">55</span><span class="p">)</span>
+
+    <span class="c1"># ファイル変換</span>
+    <span class="n">pbar_writer</span> <span class="o">=</span> <span class="n">TkPBarWriter</span><span class="p">()</span>
+    <span class="n">convert_button</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">create_convert_button</span><span class="p">(</span><span class="n">pbar_writer</span><span class="p">)</span>
+    <span class="n">radio_buttons</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">create_method_options</span><span class="p">()</span>
+
+    <span class="c1"># プログレスバー</span>
+    <span class="n">percent</span><span class="p">,</span> <span class="n">pb</span><span class="p">,</span> <span class="n">remain</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">create_pbar_items</span><span class="p">(</span><span class="n">pbar_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+
+    <span class="c1"># コンソール</span>
+    <span class="n">console</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">create_console</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">65</span><span class="p">)</span>
+
+    <span class="c1"># レイアウト配置</span>
+    <span class="n">browse_button</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">path_entry</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">columnspan</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">convert_button</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">radio_button</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">radio_buttons</span><span class="p">):</span>
+        <span class="n">radio_button</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">percent</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">pb</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">columnspan</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">remain</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">columnspan</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">columnspan</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">padx</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">pady</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+
+    <span class="n">window</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">window</span>
+    <span class="k">return</span> <span class="n">window</span></div>
+
+
+
+<div class="viewcode-block" id="convert_and_send">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.convert_and_send">[ドキュメント]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_and_send</span><span class="p">(</span><span class="n">window</span><span class="p">:</span> <span class="n">MyWindow</span><span class="p">,</span> <span class="n">pbar_writer</span><span class="p">:</span> <span class="n">TkPBarWriter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GUI の入力内容にもとづき変換を実行する。</span>
+
+<span class="sd">    FFmpeg の実行と進捗受信を gevent の greenlet で並行に動かし、</span>
+<span class="sd">    両者の完了を待ち合わせる。</span>
+
+<span class="sd">    変換に失敗した場合、例外はそのままでは Tk が ``sys.stderr`` へ出力して</span>
+<span class="sd">    しまい、コンソール領域 (``sys.stdout`` を転送) にも表示されない。</span>
+<span class="sd">    ``--noconsole`` でビルドした実行ファイルでは何も見えなくなるため、</span>
+<span class="sd">    ここで捕捉してダイアログとコンソールの両方へ表示する。</span>
+
+<span class="sd">    :param window: 入力値と進捗ウィジェットを保持するウィンドウ。</span>
+<span class="sd">    :param pbar_writer: 進捗をウィジェットへ反映するライター。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_convert</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="n">pbar_writer</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># noqa: BLE001</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;変換に失敗しました: </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">messagebox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="s2">&quot;変換に失敗しました&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_convert">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui._convert">[ドキュメント]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_convert</span><span class="p">(</span><span class="n">window</span><span class="p">:</span> <span class="n">MyWindow</span><span class="p">,</span> <span class="n">pbar_writer</span><span class="p">:</span> <span class="n">TkPBarWriter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GUI の入力内容にもとづき変換を実行する (例外はそのまま送出する)。</span>
+
+<span class="sd">    :param window: 入力値と進捗ウィジェットを保持するウィンドウ。</span>
+<span class="sd">    :param pbar_writer: 進捗をウィジェットへ反映するライター。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># GUI から情報取得</span>
+    <span class="n">path_str</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">entry_var</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="n">method_str</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">selected_method</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Path: </span><span class="si">{</span><span class="n">path_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Method: </span><span class="si">{</span><span class="n">method_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># プログレスバー書き込み設定</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">progress</span><span class="o">.</span><span class="n">probe_duration</span><span class="p">(</span><span class="n">path_str</span><span class="p">)</span>
+    <span class="n">pbar_writer</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">total</span><span class="p">)</span>
+
+    <span class="c1"># FFmpeg 変換設定</span>
+    <span class="n">pipeline</span> <span class="o">=</span> <span class="n">METHODS</span><span class="p">[</span><span class="n">method_str</span><span class="p">](</span><span class="n">path_str</span><span class="p">)</span>
+    <span class="n">progress</span><span class="o">.</span><span class="n">run_pipeline_with_observer</span><span class="p">(</span>
+        <span class="n">pipeline</span><span class="p">,</span>
+        <span class="k">lambda</span> <span class="n">step</span><span class="p">:</span> <span class="n">pbar_writer</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">window</span><span class="p">),</span>
+        <span class="n">total</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="open_window">
+<a class="viewcode-back" href="../../api/video_converter.gui.html#video_converter.gui.open_window">[ドキュメント]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">open_window</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ウィンドウを構築し、イベントループを開始する。&quot;&quot;&quot;</span>
+    <span class="n">window</span> <span class="o">=</span> <span class="n">create_window</span><span class="p">()</span>
+    <span class="n">window</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">open_window</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, applejxd.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

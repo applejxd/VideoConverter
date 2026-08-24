@@ -1,0 +1,342 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ja" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>video_converter package &mdash; video-converter 0.1.0</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=98e9f989"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/translations.js?v=4755f45a"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../genindex.html" />
+    <link rel="search" title="検索" href="../search.html" />
+    <link rel="next" title="video_converter.compressor module" href="video_converter.compressor.html" />
+    <link rel="prev" title="src" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            video-converter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">目次</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">使い方</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">アーキテクチャ</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">video_converter package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.compressor.html">video_converter.compressor module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.converter.html">video_converter.converter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.extractor.html">video_converter.extractor module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.gui.html">video_converter.gui module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.paths.html">video_converter.paths module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.progress.html">video_converter.progress module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="video_converter.utils.html">video_converter.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-video_converter">Module contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#video_converter.audio_eliminate"><code class="docutils literal notranslate"><span class="pre">audio_eliminate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#video_converter.audio_extract"><code class="docutils literal notranslate"><span class="pre">audio_extract()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#video_converter.compress"><code class="docutils literal notranslate"><span class="pre">compress()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#video_converter.to_mp4"><code class="docutils literal notranslate"><span class="pre">to_mp4()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">video-converter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+      <li class="breadcrumb-item active">video_converter package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/video_converter.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="video-converter-package">
+<h1>video_converter package<a class="headerlink" href="#video-converter-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="video_converter.compressor.html">video_converter.compressor module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.compressor.html#video_converter.compressor.compress"><code class="docutils literal notranslate"><span class="pre">compress()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="video_converter.converter.html">video_converter.converter module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.converter.html#video_converter.converter.to_mp4"><code class="docutils literal notranslate"><span class="pre">to_mp4()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="video_converter.extractor.html">video_converter.extractor module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.extractor.html#video_converter.extractor.audio_eliminate"><code class="docutils literal notranslate"><span class="pre">audio_eliminate()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.extractor.html#video_converter.extractor.audio_extract"><code class="docutils literal notranslate"><span class="pre">audio_extract()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="video_converter.gui.html">video_converter.gui module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.METHODS"><code class="docutils literal notranslate"><span class="pre">METHODS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.MyWindow"><code class="docutils literal notranslate"><span class="pre">MyWindow</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.StdoutRedirector"><code class="docutils literal notranslate"><span class="pre">StdoutRedirector</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.StdoutRedirector.fileno"><code class="docutils literal notranslate"><span class="pre">StdoutRedirector.fileno()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.StdoutRedirector.flush"><code class="docutils literal notranslate"><span class="pre">StdoutRedirector.flush()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.StdoutRedirector.isatty"><code class="docutils literal notranslate"><span class="pre">StdoutRedirector.isatty()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.StdoutRedirector.write"><code class="docutils literal notranslate"><span class="pre">StdoutRedirector.write()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.TkPBarWriter"><code class="docutils literal notranslate"><span class="pre">TkPBarWriter</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.TkPBarWriter.callback"><code class="docutils literal notranslate"><span class="pre">TkPBarWriter.callback()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.TkPBarWriter.reset"><code class="docutils literal notranslate"><span class="pre">TkPBarWriter.reset()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.WindowBuilder"><code class="docutils literal notranslate"><span class="pre">WindowBuilder</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.WindowBuilder.create_browse_button"><code class="docutils literal notranslate"><span class="pre">WindowBuilder.create_browse_button()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.WindowBuilder.create_console"><code class="docutils literal notranslate"><span class="pre">WindowBuilder.create_console()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.WindowBuilder.create_convert_button"><code class="docutils literal notranslate"><span class="pre">WindowBuilder.create_convert_button()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.WindowBuilder.create_method_options"><code class="docutils literal notranslate"><span class="pre">WindowBuilder.create_method_options()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.WindowBuilder.create_path_entry"><code class="docutils literal notranslate"><span class="pre">WindowBuilder.create_path_entry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.WindowBuilder.create_pbar_items"><code class="docutils literal notranslate"><span class="pre">WindowBuilder.create_pbar_items()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.WindowBuilder.create_window"><code class="docutils literal notranslate"><span class="pre">WindowBuilder.create_window()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.gui.html#video_converter.gui._browse_file"><code class="docutils literal notranslate"><span class="pre">_browse_file()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.gui.html#video_converter.gui._convert"><code class="docutils literal notranslate"><span class="pre">_convert()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.gui.html#video_converter.gui._drop_file"><code class="docutils literal notranslate"><span class="pre">_drop_file()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.convert_and_send"><code class="docutils literal notranslate"><span class="pre">convert_and_send()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.create_window"><code class="docutils literal notranslate"><span class="pre">create_window()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.gui.html#video_converter.gui.open_window"><code class="docutils literal notranslate"><span class="pre">open_window()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="video_converter.paths.html">video_converter.paths module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.paths.html#video_converter.paths._is_same_file"><code class="docutils literal notranslate"><span class="pre">_is_same_file()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.paths.html#video_converter.paths.resolve_io_paths"><code class="docutils literal notranslate"><span class="pre">resolve_io_paths()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="video_converter.progress.html">video_converter.progress module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.progress.html#video_converter.progress.DEFAULT_ACCEPT_TIMEOUT"><code class="docutils literal notranslate"><span class="pre">DEFAULT_ACCEPT_TIMEOUT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.progress.html#video_converter.progress.FFmpegTCPSender"><code class="docutils literal notranslate"><span class="pre">FFmpegTCPSender</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.progress.html#video_converter.progress.FFmpegTCPSender._connect"><code class="docutils literal notranslate"><span class="pre">FFmpegTCPSender._connect()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.progress.html#video_converter.progress.FFmpegTCPSender._notify_pbar"><code class="docutils literal notranslate"><span class="pre">FFmpegTCPSender._notify_pbar()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.progress.html#video_converter.progress.FFmpegTCPSender.close"><code class="docutils literal notranslate"><span class="pre">FFmpegTCPSender.close()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.progress.html#video_converter.progress.FFmpegTCPSender.port"><code class="docutils literal notranslate"><span class="pre">FFmpegTCPSender.port</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="video_converter.progress.html#video_converter.progress.FFmpegTCPSender.tcp_handler"><code class="docutils literal notranslate"><span class="pre">FFmpegTCPSender.tcp_handler()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.progress.html#video_converter.progress._ensure_monkey_patched"><code class="docutils literal notranslate"><span class="pre">_ensure_monkey_patched()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.progress.html#video_converter.progress.probe_duration"><code class="docutils literal notranslate"><span class="pre">probe_duration()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.progress.html#video_converter.progress.run_pipeline_with_observer"><code class="docutils literal notranslate"><span class="pre">run_pipeline_with_observer()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.progress.html#video_converter.progress.run_with_tcp_pbar"><code class="docutils literal notranslate"><span class="pre">run_with_tcp_pbar()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="video_converter.utils.html">video_converter.utils module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="video_converter.utils.html#video_converter.utils.cli_wrapper"><code class="docutils literal notranslate"><span class="pre">cli_wrapper()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="module-video_converter">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-video_converter" title="Link to this heading"></a></h2>
+<p>ffmpeg-python を用いた動画変換ライブラリ。</p>
+<p>CLI (Fire) と GUI (Tkinter) の 2 つのインターフェースから、動画の圧縮・
+形式変換・音声抽出・音声除去を行う。</p>
+<p>各変換関数は ffmpeg を即座に実行せず、<code class="docutils literal notranslate"><span class="pre">ffmpeg.nodes.Node</span></code> (pipeline) を
+組み立てて返す。実行は <a class="reference internal" href="video_converter.progress.html#video_converter.progress.run_with_tcp_pbar" title="video_converter.progress.run_with_tcp_pbar"><code class="xref py py-func docutils literal notranslate"><span class="pre">video_converter.progress.run_with_tcp_pbar()</span></code></a> が
+担当し、その際 FFmpeg の <code class="docutils literal notranslate"><span class="pre">-progress</span></code> オプションによる進捗を TCP 経由で
+受け取ってプログレスバーへ反映する。</p>
+<p>モジュール構成:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="video_converter.compressor.html#module-video_converter.compressor" title="video_converter.compressor"><code class="xref py py-mod docutils literal notranslate"><span class="pre">video_converter.compressor</span></code></a> -- 動画の圧縮 (CRF 指定)</p></li>
+<li><p><a class="reference internal" href="video_converter.converter.html#module-video_converter.converter" title="video_converter.converter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">video_converter.converter</span></code></a> -- .mp4 への形式変換</p></li>
+<li><p><a class="reference internal" href="video_converter.extractor.html#module-video_converter.extractor" title="video_converter.extractor"><code class="xref py py-mod docutils literal notranslate"><span class="pre">video_converter.extractor</span></code></a> -- 音声の抽出および除去</p></li>
+<li><p><a class="reference internal" href="video_converter.progress.html#module-video_converter.progress" title="video_converter.progress"><code class="xref py py-mod docutils literal notranslate"><span class="pre">video_converter.progress</span></code></a> -- TCP 経由の進捗取得と pipeline 実行</p></li>
+<li><p><a class="reference internal" href="video_converter.gui.html#module-video_converter.gui" title="video_converter.gui"><code class="xref py py-mod docutils literal notranslate"><span class="pre">video_converter.gui</span></code></a> -- Tkinter による GUI</p></li>
+<li><p><a class="reference internal" href="video_converter.utils.html#module-video_converter.utils" title="video_converter.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">video_converter.utils</span></code></a> -- CLI 用のデコレータ</p></li>
+</ul>
+<dl class="py function">
+<dt class="sig sig-object py" id="video_converter.audio_eliminate">
+<span class="sig-prename descclassname"><span class="pre">video_converter.</span></span><span class="sig-name descname"><span class="pre">audio_eliminate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/extractor.html#audio_eliminate"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.audio_eliminate" title="Link to this definition"></a></dt>
+<dd><p>音声を削除</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_path</strong> (<em>str</em><em> | </em><em>PathLike</em>) -- 動画のファイルパス</p></li>
+<li><p><strong>output_path</strong> (<em>str</em>) -- 出力ファイルパス
+(省略した場合は、元のファイル名に&quot;_wo_audio.mp4&quot;を付加)</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値<span class="colon">:</span></dt>
+<dd class="field-even"><p>音声を削除するパイプライン。出力先が既に存在する場合は上書きする</p>
+</dd>
+<dt class="field-odd">例外<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> -- 入力パスがファイルとして存在しない場合</p></li>
+<li><p><strong>ValueError</strong> -- 入力パスと出力パスが同一のファイルを指す場合</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Node</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="video_converter.audio_extract">
+<span class="sig-prename descclassname"><span class="pre">video_converter.</span></span><span class="sig-name descname"><span class="pre">audio_extract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/extractor.html#audio_extract"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.audio_extract" title="Link to this definition"></a></dt>
+<dd><p>音声を .mp3 で抽出</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_path</strong> (<em>str</em><em> | </em><em>PathLike</em>) -- 動画のファイルパス</p></li>
+<li><p><strong>output_path</strong> (<em>str</em>) -- 出力ファイルパス (省略した場合は、元のファイル名に&quot;.mp3&quot;を付加)</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値<span class="colon">:</span></dt>
+<dd class="field-even"><p>音声を .mp3 で抽出するパイプライン。出力先が既に存在する場合は上書きする</p>
+</dd>
+<dt class="field-odd">例外<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> -- 入力パスがファイルとして存在しない場合</p></li>
+<li><p><strong>ValueError</strong> -- 入力パスと出力パスが同一のファイルを指す場合</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Node</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="video_converter.compress">
+<span class="sig-prename descclassname"><span class="pre">video_converter.</span></span><span class="sig-name descname"><span class="pre">compress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">23</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/compressor.html#compress"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.compress" title="Link to this definition"></a></dt>
+<dd><p>動画を圧縮</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_path</strong> (<em>str</em><em> | </em><em>PathLike</em>) -- 動画のファイルパス</p></li>
+<li><p><strong>output_path</strong> (<em>str</em><em> | </em><em>PathLike</em>) -- 圧縮後の動画のファイルパス
+(省略した場合は、元のファイル名に&quot;_compressed&quot;を付加)</p></li>
+<li><p><strong>crf</strong> (<em>int</em>) -- 圧縮後の動画品質 (低いほうが品質が高い)</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値<span class="colon">:</span></dt>
+<dd class="field-even"><p>圧縮後の動画のパイプライン。出力先が既に存在する場合は上書きする</p>
+</dd>
+<dt class="field-odd">例外<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> -- 入力パスがファイルとして存在しない場合</p></li>
+<li><p><strong>ValueError</strong> -- 入力パスと出力パスが同一のファイルを指す場合</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Node</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="video_converter.to_mp4">
+<span class="sig-prename descclassname"><span class="pre">video_converter.</span></span><span class="sig-name descname"><span class="pre">to_mp4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/video_converter/converter.html#to_mp4"><span class="viewcode-link"><span class="pre">[ソース]</span></span></a><a class="headerlink" href="#video_converter.to_mp4" title="Link to this definition"></a></dt>
+<dd><p>.mp4 へ変換</p>
+<dl class="field-list simple">
+<dt class="field-odd">パラメータ<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_path</strong> (<em>str</em><em> | </em><em>PathLike</em>) -- 動画のファイルパス</p></li>
+<li><p><strong>output_path</strong> (<em>str</em>) -- 出力ファイルパス (省略した場合は、元のファイル名に&quot;.mp4&quot;を付加)</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値<span class="colon">:</span></dt>
+<dd class="field-even"><p>.mp4 へ変換するパイプライン。出力先が既に存在する場合は上書きする</p>
+</dd>
+<dt class="field-odd">例外<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> -- 入力パスがファイルとして存在しない場合</p></li>
+<li><p><strong>ValueError</strong> -- 入力パスと出力パスが同一のファイルを指す場合
+(拡張子が .mp4 の入力に対し output_path を省略した場合など)</p></li>
+</ul>
+</dd>
+<dt class="field-even">戻り値の型<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Node</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="src" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="video_converter.compressor.html" class="btn btn-neutral float-right" title="video_converter.compressor module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, applejxd.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

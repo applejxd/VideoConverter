@@ -1,0 +1,258 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ja" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>アーキテクチャ &mdash; video-converter 0.1.0</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=98e9f989"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=4755f45a"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="genindex.html" />
+    <link rel="search" title="検索" href="search.html" />
+    <link rel="next" title="src" href="api/modules.html" />
+    <link rel="prev" title="使い方" href="usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            video-converter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">目次</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readme.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">使い方</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">アーキテクチャ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id2">全体像</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">入出力パスの解決</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pipeline">pipeline を返す設計</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">進捗の取得方法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#observer">Observer パターン</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#builder-gui">Builder パターン (GUI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cli">CLI のデコレータ</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">video-converter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">アーキテクチャ</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/architecture.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>アーキテクチャ<a class="headerlink" href="#id1" title="Link to this heading"></a></h1>
+<section id="id2">
+<h2>全体像<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<p>このライブラリは「変換処理の定義」と「実行・進捗表示」を分離しています。</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>┌──────────────┐        ┌───────────────────────┐
+│ CLI (Fire)   │        │ GUI (Tkinter)         │
+│ __main__.py  │        │ gui.py                │
+└──────┬───────┘        └───────────┬───────────┘
+       │ cli_wrapper                │ convert_and_send
+       ▼                            ▼
+┌──────────────────────────────────────────────┐
+│ compressor / converter / extractor           │
+│  → ffmpeg.nodes.Node (pipeline) を返すだけ    │
+│  paths.resolve_io_paths で入出力を確定        │
+└──────────────────────┬───────────────────────┘
+                       ▼
+┌──────────────────────────────────────────────┐
+│ progress.py                                  │
+│  run_pipeline_with_observer                  │
+│  pipeline.run() + TCP 経由の進捗受信          │
+└──────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h2>入出力パスの解決<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<p>入力の存在確認、既定の出力先の決定、入力と出力が同一かの判定は
+<a class="reference internal" href="api/video_converter.paths.html#video_converter.paths.resolve_io_paths" title="video_converter.paths.resolve_io_paths"><code class="xref py py-func docutils literal notranslate"><span class="pre">resolve_io_paths()</span></code></a> にまとめています。
+このモジュールは <code class="docutils literal notranslate"><span class="pre">gevent</span></code> にも <code class="docutils literal notranslate"><span class="pre">progress</span></code> にも依存しないため、
+パス解決のためだけに import しても副作用がありません。</p>
+<p>出力先が入力と同じファイルを指す場合は <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> で停止します。
+<code class="docutils literal notranslate"><span class="pre">to_mp4</span></code> に <code class="docutils literal notranslate"><span class="pre">.mp4</span></code> を渡して <code class="docutils literal notranslate"><span class="pre">output_path</span></code> を省略した場合などが
+これにあたり、そのまま実行すると FFmpeg が同じファイルを読み書きして
+入力を破壊するためです。</p>
+</section>
+<section id="pipeline">
+<h2>pipeline を返す設計<a class="headerlink" href="#pipeline" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="api/video_converter.compressor.html#video_converter.compressor.compress" title="video_converter.compressor.compress"><code class="xref py py-func docutils literal notranslate"><span class="pre">compress()</span></code></a>、
+<a class="reference internal" href="api/video_converter.converter.html#video_converter.converter.to_mp4" title="video_converter.converter.to_mp4"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_mp4()</span></code></a>、
+<a class="reference internal" href="api/video_converter.extractor.html#video_converter.extractor.audio_extract" title="video_converter.extractor.audio_extract"><code class="xref py py-func docutils literal notranslate"><span class="pre">audio_extract()</span></code></a>、
+<a class="reference internal" href="api/video_converter.extractor.html#video_converter.extractor.audio_eliminate" title="video_converter.extractor.audio_eliminate"><code class="xref py py-func docutils literal notranslate"><span class="pre">audio_eliminate()</span></code></a> は、いずれも FFmpeg を
+その場で実行せず、<code class="docutils literal notranslate"><span class="pre">ffmpeg.nodes.Node</span></code> (pipeline) を組み立てて返します。</p>
+<p>こうすることで、呼び出し側が実行前に <code class="docutils literal notranslate"><span class="pre">global_args()</span></code> で
+<code class="docutils literal notranslate"><span class="pre">-progress</span> <span class="pre">tcp://...</span></code> を追加できます。変換の定義と実行タイミングを
+分離しているため、CLI と GUI で同じ変換関数を再利用できます。</p>
+<p>いずれの pipeline にも <code class="docutils literal notranslate"><span class="pre">overwrite_output()</span></code> を付けているため、出力先が
+既に存在する場合は上書きします。これが無いと FFmpeg が
+<code class="docutils literal notranslate"><span class="pre">Overwrite?</span> <span class="pre">[y/N]</span></code> の確認で停止し、進捗用の TCP 接続をしないまま終了して
+変換が破綻します。</p>
+</section>
+<section id="id4">
+<h2>進捗の取得方法<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<p>FFmpeg は <code class="docutils literal notranslate"><span class="pre">-progress</span> <span class="pre">&lt;URL&gt;</span></code> オプションを与えると、<code class="docutils literal notranslate"><span class="pre">key=value</span></code> 形式の
+進捗情報を指定先へ書き出します。本ライブラリはこれを TCP で受け取ります。</p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="api/video_converter.progress.html#video_converter.progress.FFmpegTCPSender" title="video_converter.progress.FFmpegTCPSender"><code class="xref py py-class docutils literal notranslate"><span class="pre">FFmpegTCPSender</span></code></a> が
+<code class="docutils literal notranslate"><span class="pre">bind((&quot;127.0.0.1&quot;,</span> <span class="pre">0))</span></code> で OS に空きポートを割り当てさせ、
+<a class="reference internal" href="api/video_converter.progress.html#video_converter.progress.FFmpegTCPSender.port" title="video_converter.progress.FFmpegTCPSender.port"><code class="xref py py-attr docutils literal notranslate"><span class="pre">port</span></code></a> で番号を公開する。
+空きを探してから改めて <code class="docutils literal notranslate"><span class="pre">bind</span></code> すると、その間に別プロセスへ取られる
+余地があるため、先に <code class="docutils literal notranslate"><span class="pre">bind</span></code> してから番号を読み出す。</p></li>
+<li><p>pipeline に <code class="docutils literal notranslate"><span class="pre">-progress</span> <span class="pre">tcp://127.0.0.1:&lt;port&gt;</span></code> を付与する。</p></li>
+<li><p><a class="reference internal" href="api/video_converter.progress.html#video_converter.progress.FFmpegTCPSender.tcp_handler" title="video_converter.progress.FFmpegTCPSender.tcp_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">tcp_handler()</span></code></a> が
+接続を受け付け、受信した行を <code class="docutils literal notranslate"><span class="pre">key</span></code> と <code class="docutils literal notranslate"><span class="pre">value</span></code> に分解する。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">out_time_ms</span></code> から変換済みの再生時間を算出し、進捗として通知する。
+<code class="docutils literal notranslate"><span class="pre">progress=end</span></code> を受け取った時点で合計時間へ丸める。</p></li>
+</ol>
+<p>FFmpeg の実行と進捗の受信は同時に行う必要があるため、<code class="docutils literal notranslate"><span class="pre">gevent</span></code> の
+greenlet を 2 つ <code class="docutils literal notranslate"><span class="pre">spawn</span></code> して <code class="docutils literal notranslate"><span class="pre">joinall</span></code> で待ち合わせています。
+<code class="docutils literal notranslate"><span class="pre">joinall</span></code> は greenlet の例外を伝播しないため、待ち合わせ後に
+<code class="docutils literal notranslate"><span class="pre">successful()</span></code> を確認して例外を再送出します。あわせて FFmpeg 側の
+greenlet に <code class="docutils literal notranslate"><span class="pre">link_exception</span></code> を張り、FFmpeg が接続前に失敗した場合は
+進捗側の待ち受けを直ちに打ち切ります。接続を待つ <code class="docutils literal notranslate"><span class="pre">accept()</span></code> にも
+タイムアウト (<a class="reference internal" href="api/video_converter.progress.html#video_converter.progress.DEFAULT_ACCEPT_TIMEOUT" title="video_converter.progress.DEFAULT_ACCEPT_TIMEOUT"><code class="xref py py-data docutils literal notranslate"><span class="pre">DEFAULT_ACCEPT_TIMEOUT</span></code></a>)
+を設けており、これらが無いと FFmpeg の失敗時にハングします。</p>
+<p><code class="docutils literal notranslate"><span class="pre">gevent</span></code> の <code class="docutils literal notranslate"><span class="pre">monkey.patch_all()</span></code> は、他のモジュールが <code class="docutils literal notranslate"><span class="pre">ssl</span></code> や
+<code class="docutils literal notranslate"><span class="pre">socket</span></code> を import するより先に適用する必要があるため、ライブラリ側では
+なく <code class="xref py py-mod docutils literal notranslate"><span class="pre">video_converter.__main__</span></code> の先頭で呼んでいます。</p>
+</section>
+<section id="observer">
+<h2>Observer パターン<a class="headerlink" href="#observer" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="api/video_converter.progress.html#video_converter.progress.FFmpegTCPSender" title="video_converter.progress.FFmpegTCPSender"><code class="xref py py-class docutils literal notranslate"><span class="pre">FFmpegTCPSender</span></code></a> が Subject、進捗の表示側が
+Observer にあたります。Observer は 2 種類あり、
+<a class="reference internal" href="api/video_converter.progress.html#video_converter.progress.FFmpegTCPSender._notify_pbar" title="video_converter.progress.FFmpegTCPSender._notify_pbar"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_notify_pbar()</span></code></a> が
+<code class="docutils literal notranslate"><span class="pre">n</span></code> 属性の有無で実行時に判別します。</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 30.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>利用側</p></th>
+<th class="head"><p>Observer</p></th>
+<th class="head"><p>通知方法</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>CLI</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tqdm.tqdm</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pbar.update(差分秒数)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>GUI</p></td>
+<td><p><a class="reference internal" href="api/video_converter.gui.html#video_converter.gui.TkPBarWriter" title="video_converter.gui.TkPBarWriter"><code class="xref py py-class docutils literal notranslate"><span class="pre">TkPBarWriter</span></code></a> のコールバック</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pbar(累積秒数)</span></code> を呼び出す</p></td>
+</tr>
+</tbody>
+</table>
+<p>この分岐により、<code class="docutils literal notranslate"><span class="pre">progress.py</span></code> は tqdm にも Tkinter にも依存せずに
+両方の表示先へ対応できます。</p>
+</section>
+<section id="builder-gui">
+<h2>Builder パターン (GUI)<a class="headerlink" href="#builder-gui" title="Link to this heading"></a></h2>
+<p>GUI では、ウィジェットの生成と配置を分離しています。</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="api/video_converter.gui.html#video_converter.gui.MyWindow" title="video_converter.gui.MyWindow"><code class="xref py py-class docutils literal notranslate"><span class="pre">MyWindow</span></code></a> -- ウィジェットと状態変数
+(<code class="docutils literal notranslate"><span class="pre">tk.StringVar</span></code> など) への参照だけを保持するコンテナ。</p></li>
+<li><p><a class="reference internal" href="api/video_converter.gui.html#video_converter.gui.WindowBuilder" title="video_converter.gui.WindowBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">WindowBuilder</span></code></a> -- <code class="docutils literal notranslate"><span class="pre">create_*</span></code> メソッドで
+ウィジェットを生成し、状態変数を <code class="docutils literal notranslate"><span class="pre">MyWindow</span></code> へ登録する。</p></li>
+<li><p><a class="reference internal" href="api/video_converter.gui.html#video_converter.gui.create_window" title="video_converter.gui.create_window"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_window()</span></code></a> -- Builder を呼び出したうえで
+<code class="docutils literal notranslate"><span class="pre">grid()</span></code> によるレイアウトを行い、完成した <code class="docutils literal notranslate"><span class="pre">MyWindow</span></code> を返す。</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">create_window()</span></code> は <code class="docutils literal notranslate"><span class="pre">mainloop()</span></code> を呼ばないため、テストから
+ウィンドウ生成のみを検証できます (<code class="docutils literal notranslate"><span class="pre">tests/test_gui.py</span></code>)。
+実際にイベントループを開始するのは
+<a class="reference internal" href="api/video_converter.gui.html#video_converter.gui.open_window" title="video_converter.gui.open_window"><code class="xref py py-func docutils literal notranslate"><span class="pre">open_window()</span></code></a> です。</p>
+<p>なお <a class="reference internal" href="api/video_converter.gui.html#video_converter.gui.WindowBuilder.create_console" title="video_converter.gui.WindowBuilder.create_console"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_console()</span></code></a> は副作用として
+<code class="docutils literal notranslate"><span class="pre">sys.stdout</span></code> を <a class="reference internal" href="api/video_converter.gui.html#video_converter.gui.StdoutRedirector" title="video_converter.gui.StdoutRedirector"><code class="xref py py-class docutils literal notranslate"><span class="pre">StdoutRedirector</span></code></a> へ差し替え、
+標準出力をウィンドウ内のテキストウィジェットへ転送します。</p>
+</section>
+<section id="cli">
+<h2>CLI のデコレータ<a class="headerlink" href="#cli" title="Link to this heading"></a></h2>
+<p>CLI 側では <a class="reference internal" href="api/video_converter.utils.html#video_converter.utils.cli_wrapper" title="video_converter.utils.cli_wrapper"><code class="xref py py-func docutils literal notranslate"><span class="pre">cli_wrapper()</span></code></a> が変換関数を包み、
+返された pipeline を <a class="reference internal" href="api/video_converter.progress.html#video_converter.progress.run_with_tcp_pbar" title="video_converter.progress.run_with_tcp_pbar"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_with_tcp_pbar()</span></code></a> へ
+渡します。<code class="docutils literal notranslate"><span class="pre">__main__.py</span></code> では Fire へ登録する時点でこのデコレータを適用して
+おり、変換関数自体には進捗表示の知識を持たせていません。</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="usage.html" class="btn btn-neutral float-left" title="使い方" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api/modules.html" class="btn btn-neutral float-right" title="src" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, applejxd.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
