@@ -1,0 +1,60 @@
+name: docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# 同時実行を 1 本に制限する (gh-pages への push が競合しないようにするため)
+concurrency:
+  group: docs
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      # peaceiris/actions-gh-pages が gh-pages ブランチへ push するために必要
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      # autodoc が gui.py を import するため tkinter が必要
+      - name: Check tkinter availability
+        run: uv run python -c "import tkinter, tkinterdnd2; print(tkinter.TkVersion)"
+
+      - name: Build documentation
+        run: uv run sphinx-build -M html docs/sphinx/source docs/sphinx/build -W --keep-going
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-html
+          path: docs/sphinx/build/html
+
+      # gh-pages ブランチを毎回作り直すことで、過去ビルドの残骸を残さない
+      - name: Deploy to GitHub Pages
+        if: github.event_name != 'pull_request'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: docs/sphinx/build/html
+          force_orphan: true
+          user_name: github-actions[bot]
+          user_email: github-actions[bot]@users.noreply.github.com
+          commit_message: "docs: deploy ${{ github.sha }}"
