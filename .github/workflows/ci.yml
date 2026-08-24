@@ -1,0 +1,53 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # ランナーのシステム Python には tkinter が含まれず、gui.py を import
+    # できない。uv が管理する Python (tkinter 同梱) の使用を強制する
+    env:
+      UV_PYTHON: "3.12"
+      UV_PYTHON_PREFERENCE: only-managed
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      # ffmpeg-python は FFmpeg 本体を同梱しないため、変換テストに必要。
+      # xvfb は GUI テストの仮想ディスプレイ用
+      - name: Install FFmpeg and Xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg xvfb
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Lint
+        run: |
+          uv run ruff check src tests
+          uv run ruff format --check src tests
+
+      # GUI テストは Tk のウィンドウを生成するため仮想ディスプレイ上で走らせる。
+      # 生成できない場合はテスト側がスキップする
+      - name: Test
+        run: xvfb-run --auto-servernum uv run pytest -q -rs
